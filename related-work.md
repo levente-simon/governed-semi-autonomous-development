@@ -1,165 +1,283 @@
 # Related work
 
-*How this method relates to published work on governing AI coding agents, and where it
-differs. Current as of October 2026. Corrections and additions are welcome as issues.*
+*How this method relates to published work, and where it differs. Current as of October 2026.
+Corrections and additions are welcome as issues.*
 
-The method was developed from delivery rather than from the literature, and the convergences
-below were found afterwards. Where another work got somewhere first, it is said so here.
+**Correction notice (v0.3).** The v0.2 version of this document claimed four positions in this
+method were unaddressed in published work. That claim was wrong, and wrong in a way worth
+recording rather than quietly editing: the survey behind it covered 2026 preprints on coding
+agents and missed two established bodies of work that address the same properties directly.
+Multi-agent *organizational models* formalised roles, groups and role cardinality two decades
+ago. Capability security has specified non-relayable, narrowing-only delegation since the
+1980s. Both are described below, and the claims in this method are reduced accordingly.
+
+The method was developed from delivery rather than from the literature. That explains the
+original omission; it does not excuse it.
 
 | Work | Governs | Unit of control | Evidence basis |
 |---|---|---|---|
-| **GAIE / OCM** (Kang, 2026) | Whether a human reviews a given change, and when | The individual code generation task | Analytical; no production data |
-| **Deterministic Control Plane** (Madatha, 2026) | What a coding harness permits an agent to do | Tools, paths, shell commands, git operations | Conformance tests on injected violations |
-| **CASE** (Telukunta, Lilis & Baron, 2026) | Enterprise agentic AI operations | The agent, the collective, the human-agent team, the fleet | Framework and maturity instrument |
-| **This method** | How an owner runs agent teams on a product | The control layer, chosen per layer | One product, eight months, twelve releases |
+| **MAS organizational models** (Gaia 2000; MOISE/MOISE+ 2002) | The organization as an explicit, specified object | Roles, groups, links, role cardinality | Two decades of academic use |
+| **Capability security** (confused deputy 1988; macaroons 2014; RFC 8693) | What a credential permits and who may narrow it | The credential | Deployed infrastructure |
+| **Harness engineering** (2026) | What the tool layer permits before a call executes | The tool call | Empirical studies |
+| **GAIE / OCM** (Kang 2026) | Whether a human reviews a given change | The individual code generation task | Analytical; no production data |
+| **Deterministic control plane** (Madatha 2026) | Permissions, integrity and phase gates in a coding harness | Tools, paths, commands, phases | Conformance tests on injected violations |
+| **This method** | How one owner runs agent teams on a product | The control layer, chosen per layer | One product, eight months, twelve releases |
+
+## Multi-agent organizational models
+
+This is the body of work the v0.2 claim should have engaged with. Treating the organization as
+the governance object, specified separately from the agents, is not new and is not a gap.
+
+**Gaia** (Wooldridge, Jennings & Kinny, *Autonomous Agents and Multi-Agent Systems* 3, 2000)
+treats a multi-agent system as a computational organization of interacting roles, and models
+organizational structure together with the organizational rules governing global behaviour.
+
+**MOISE and MOISE+** (Hübner, Sichman & Boissier; MOISE 2000, MOISE+ 2002) separate a
+structural specification (roles, groups, links), a functional specification, and a deontic
+specification linking roles to goals through permissions and obligations. MOISE+ added role
+inheritance, recursive groups, role compatibility and **role cardinality** -- constraints such
+as "this group has one to five writers and exactly one editor."
+
+That last item needs stating plainly: **a cardinality limit on how many agents occupy a role
+within a group was formalised in an organizational specification language in 2002.** So the
+*formalism* for expressing such a limit is old, and this method did not invent the idea that an
+organizational specification should carry one.
+
+One distinction survives, and it cuts both ways. MOISE+ role cardinality is a composition
+constraint on a group: how many agents may hold a role. Span of control as used in §2.1 is a
+claim about a coordinator's capacity: how many reports one coordinator can hold before intent
+degrades. MOISE+ gives the language for the first and makes no empirical claim about the second.
+So the method's number is not a reinvention of role cardinality. It is also not a result: it is
+one practice's operating limit, undocumented as to method, on a single case.
+
+The classical management literature behind "span of control" also says less than the method
+implied. Graicunas (1933) argued the field had no theoretical basis for span limits and counted
+relationships rather than prescribing a number; Urwick (*Harvard Business Review*, 1956) is
+commonly credited with five, at most six; twentieth-century empirical work found median spans
+closer to ten. Modern treatment holds the optimum to be contingent on task interdependence,
+technology, standardisation and monitoring cost. A universal integer is the part of that
+literature that did not survive, so "three to four" should be read as this practice's operating
+limit under its own task mix, not as a transferable figure.
+
+## Agent orchestration frameworks
+
+The organizational frame also exists as shipped software, which is the nearest prior art of all
+and was absent from v0.2.
+
+**CrewAI** implements a hierarchical process in which a manager agent coordinates the workflow,
+delegates tasks and validates outcomes, with the manager either supplied explicitly or created
+from a configured `manager_llm`. Delegation is per-agent, gated by an `allow_delegation` flag,
+and performed as ordinary tool calls -- a delegate-work tool and an ask-question tool -- that the
+manager invokes inside its normal executor loop.
+
+**MetaGPT** assigns software-company roles (product manager, architect, project manager,
+engineer, QA) and runs them through standardised operating procedures on an assembly-line model,
+passing information between roles as intermediate documents -- requirements, specifications, test
+reports -- rather than as free conversation. That is the same instinct as this method's artefacts
+and documentation chain, and it predates it.
+
+Roles, a manager, delegation and structured hand-off between agents are therefore shipped
+features rather than propositions, and any claim to the organizational frame has to start there.
+
+**These frameworks are also where this method's narrow claim survives.** CrewAI's delegation is
+a capability the manager holds, exercised as a tool call. What reaches the worker is a task
+description, not a credential: no audience, no scope, no expiry, and nothing the receiving agent
+can verify. That is ambient authority in Hardy's sense, shipped as a product feature. The
+community guidance that only the manager should be permitted to delegate, because otherwise
+delegation recurses without bound, is the same observation from the other side: the model has no
+narrowing property, so the practical mitigation is to allow exactly one level of it. Published
+documentation for the framework also disagrees on whether the delegation flag defaults on or
+off, which suggests it is treated as a configuration convenience rather than as a security
+control.
+
+## Capability security
+
+The delegation properties this method requires are long-specified.
+
+**The confused deputy** (Hardy, *ACM SIGOPS Operating Systems Review* 22(4), 1988) is the
+canonical statement of the failure in §2 of the method. A Tymshare compiler held write
+permission to a system directory and accepted a caller-supplied output path, so a user could
+direct its debugging output onto the billing file. Hardy's lesson is that permission attached
+to the program rather than to the request. "*The owner approved this*, sent by an orchestrator"
+is that failure with new actors: authority held by the relaying party rather than carried by
+the request.
+
+**Narrowing-only delegation** is the property called *attenuation*. Macaroons (Birgisson et
+al., NDSS 2014) implement it by construction: a holder adds caveats without contacting the
+issuer, and a signature chain prevents caveats being removed, so a derived credential can only
+be narrower. SPKI/SDSI addressed delegation authority directly. **RFC 8693** (OAuth 2.0 Token
+Exchange, 2020) provides downscoped tokens enforced by the authorization server, with an `act`
+claim recording a delegation chain.
+
+The agent case is also already being worked: IETF drafts exist on attenuating agent tokens and
+on OAuth chain delegation for agent-to-tool calls. So "delegation that nests and only narrows"
+and "authority that cannot be relayed" are not unoccupied positions. They are known properties
+whose enforcement points are missing from current agent harnesses, which is a different and
+much narrower claim.
+
+## What the prior art does not cover
+
+The works above establish that the properties this method relies on are known. They do not
+settle the setting.
+
+- **Hardy (1988) is about an operating system.** A compiler, a directory, a billing file, one
+  machine. It names the property -- authority attaching to the running program rather than to
+  the request -- and nothing in it concerns a coordinating process that summarises a human's
+  decision to a subordinate process in natural language, where the summary is lossy by nature
+  rather than by bug.
+- **MOISE+ and Gaia specify organizations of designed, cooperative agents.** Roles are filled
+  by agents built to fill them. There is no human owner holding irreversible outward actions, no
+  participant that loses its policy memory mid-task, and no commercial production risk attached
+  to a role being played badly. The organizational formalism transfers; the threat model behind
+  this method does not come from there.
+- **Macaroons and RFC 8693 give the credential properties, and the agent frameworks do not
+  implement them.** A grant in a running agent harness today is typically a prompt answered
+  once, and in CrewAI delegation is a tool the manager calls rather than a credential the
+  receiver checks. That gap is the narrow, real claim available here, and the IETF agent-token
+  drafts indicate others are closing it.
+- **The orchestration frameworks structure work without governing authority.** CrewAI and
+  MetaGPT establish roles, managers and document hand-off; neither carries a human owner holding
+  irreversible outward actions, an assurance profile scaled to risk, environment isolation, or
+  any measure of what the arrangement costs the human in the loop.
+
+So the honest position is: these properties are old, their application to agent delivery is
+active and contested, and nothing in this method's delegation design should be read as new
+security engineering.
+
+## Harness engineering
+
+The method's framing of a choice between model behaviour and organizational design omits a
+third layer where much of 2026's work actually sits: the harness. Enforcement at the tool-call
+layer is neither model nor organization. *Harness Engineering for Agentic AI Coding Tools: An
+Exploratory Study* (arXiv:2602.14690) is one entry in a line that also includes work on harness
+definitions, harness evolution and system-level scaling.
+
+This matters for one specific claim. §4's rule decay is diagnosed as context compaction, which
+is a harness property, and is therefore reachable by harness changes -- longer effective
+context, non-compactable pinned context, or re-injecting the rule set per turn. Whether those
+are sufficient is an open question. They should not be excluded by classification.
 
 ## Graduated human oversight: GAIE
 
-Richard Kang's *Governed AI-Assisted Engineering* ([arXiv:2606.22484](https://arxiv.org/abs/2606.22484),
-cs.HC, June 2026) proposes an Oversight Classification Model that routes each code generation
-task to one of three tiers -- human-in-the-loop, human-over-the-loop, or automated with
-monitoring -- from four inputs: regulatory impact, customer proximity, reversibility and data
-sensitivity. Each tier names the evidence it must produce, held in append-only storage with a
-hash chain, with signed deployment authorisation in the two supervised tiers.
+Kang's *Governed AI-Assisted Engineering* ([arXiv:2606.22484](https://arxiv.org/abs/2606.22484),
+June 2026) routes each code generation task to human-in-the-loop, human-over-the-loop or
+automated-with-monitoring, from four inputs: regulatory impact, customer proximity,
+reversibility and data sensitivity. Each tier names its required evidence, held append-only
+with a hash chain.
 
-GAIE reached two of this method's positions first, and should be credited with them.
+GAIE reached positions this method holds, and should be credited with them: that oversight must
+be scaled to risk rather than applied uniformly, that uncertainty escalates upward and never
+downward, and that the agent generating code cannot approve its own deployment, which is this
+method's two-party rule.
 
-- **Oversight must be scaled to risk rather than applied uniformly.** Its §I-D states that
-  "review everything" creates velocity collapse, with the productivity benefit "entirely
-  consumed by review overhead". That is the same argument as Principle 3 and Principle 7 here:
-  efficiency matters because a bypassed control protects nothing.
-- **Classification uncertainty escalates upward, never downward** (its P3), which is the same
-  fail-closed posture this method takes at L3 and in delegation.
+Risk-tiered escalation is therefore Kang's. What this method adds is composition across
+multiple levels of delegation, which is an increment on GAIE rather than a separate position.
 
-Its P4 -- "the agent that generates code cannot approve its own deployment" -- is an
-independent arrival at the separation this method enforces through the two-party rule at
-High L4.
+**One qualifier when citing it.** GAIE's velocity-preservation figures are an analytical model
+built on assumed per-tier inputs, not measurements, and the paper says its evaluation is
+analytical with no production deployment data. Anyone contrasting measured against unmeasured
+oversight cost should note that both sides of that contrast are currently unmeasured.
 
-**How this method differs.** The unit of control is different, and the difference is the
-substance rather than a detail. GAIE tiers *the task*: given this change, how much human
-review does it need. This method profiles *the control layer*: given this work, how strongly
-is the infrastructure isolated, the session separated, the tool surface restricted, the
-repository protected. The two axes are orthogonal and compatible -- a task tiered HITL by
-GAIE could be executed in a session at Lite L1 -- and an organisation could reasonably apply
-both.
+## Deterministic enforcement: Madatha
 
-GAIE also does not address what this method's L1, L2 and L6 cover. Its §I-C explicitly
-excludes cybersecurity review and enterprise security architecture, and the development
-environment appears only as pre-transmission data filtering and one mention of sandboxed
-execution. Multi-agent operation is one architectural sentence and a generator/validator
-separation; there is no delegation of authority, no concurrency, and no ownership model.
-Oversight cost is argued qualitatively and modelled from assumed per-tier velocities; no
-reviewer-load metric is defined.
+Madatha's *A Deterministic Control Plane for LLM Coding Agents*
+([arXiv:2606.26924](https://arxiv.org/abs/2606.26924), June 2026) governs the configuration
+layer of IDE coding harnesses. Every mechanism is ordinary testable code -- hashing, regex, a
+state machine, set arithmetic -- explicitly not delegated to further LLM orchestration. Five
+permission tiers, each a strict tool allowlist enforced fail-closed at install and transform
+time, with write-path validation, an attack-derived shell blocklist on pre-tool-use hooks, and
+rules forbidding git configuration and hook manipulation.
 
-Finally, GAIE states that its evaluation is analytical and that no production deployment data
-is available, with expert validation pending. This method has the opposite profile: a single
-product, which bounds what it can claim, but real delivery rather than analysis.
+It arrived first at several positions this method holds: enforcement in code rather than in
+agent compliance, fail-closed permission sets per role, enforcement material protected from the
+session it governs, and mechanisms tested by injecting what they must reject.
 
-## Deterministic enforcement in the harness: Madatha
+**A correction to how v0.2 characterised it.** That version filed this work under enforcement
+and kept the organizational ground for this method. That classification does not hold. The
+paper includes a phase state machine with named delegation receipts, human-in-the-loop gates
+after specific phases, and a capped escalation to a human after three failed auto-fix
+iterations. A gated phase machine with delegation records and human escalation points is an
+authority structure, not only an enforcement primitive.
 
-Padmaraj Madatha's *A Deterministic Control Plane for LLM Coding Agents*
-([arXiv:2606.26924](https://arxiv.org/abs/2606.26924), cs.SE, June 2026) governs the
-configuration layer of IDE coding harnesses. "Deterministic" is load-bearing in it: every
-mechanism is ordinary testable code -- hashing, regex, a state machine, set arithmetic -- and
-explicitly not delegated to further LLM orchestration. It defines five permission tiers
-(readonly, scribe, operations, specialist, orchestrator), each a strict tool allowlist
-enforced fail-closed at install and transform time, with write-path validation, an
-attack-derived shell blocklist deployed as pre-tool-use hooks, and rules forbidding git
-configuration and hook manipulation.
+What remains different is scope rather than category: it governs one harness on one machine,
+states that it is not building a sandbox, and addresses no environment isolation, nested
+delegation or approval routing. Its phase-gate overhead is explicitly unmeasured.
 
-This is the closest published work to L3 and L4 here, and it arrived first at several
-positions this method holds:
-
-- **Enforcement belongs in code, not in agent compliance.** Its §1.2 refuses to delegate
-  governance to an LLM. Principle 2 and Principle 6 here say the same thing from practice.
-- **Fail-closed permission sets per role**, which is L4's role permission sets.
-- **Enforcement material protected from the session** -- its rules forbidding writes to
-  `.git/config`, `.git/hooks/` and `core.hooksPath` are the specific case of L3's requirement
-  that enforcement material be read-only to the session.
-- **Mechanisms are tested, including that they reject what they should**: its conformance suite
-  injects integrity tampering, over-privileged declarations and blocklist strings. §11 here
-  requires the same of any mechanism added by the learning loop.
-
-**How this method differs.** Madatha governs one harness on one machine. It states that it is
-not building a sandbox and not proposing agent coordination, and it addresses no environment
-isolation -- no containers, VMs, worktrees, network egress or per-session credentials. It has
-delegation *receipts* recorded between agents and a fixed set of human gates with a
-three-iteration escalation cap, but no role and ownership model, no nested delegation, and no
-approval routing. Phase-gate overhead is explicitly unmeasured.
-
-Where that work stops at the configuration and hook layer, this method treats that layer as
-L3 and L4 of eight, and specifies the layers around it: what the session runs inside, what it
-may reach, how authority is granted and revoked, what the repository enforces, how messages
-between sessions are authenticated, and what the audit trail must survive.
-
-**On its prevalence study.** The paper reports that fewer than 1% of agent configuration
-files declare permission boundaries against 33% of GitHub Actions workflow files. The paper
-itself labels this indicative, produced by a fragile parser, with n=31 true positives of
-6,145 files, and it is not the study's headline finding. The headline finding is that agent
-configurations propagate as undeclared shared components: 10.1% of tracked paths are exact
-duplicates across repositories, and 75.5% of clone pairs cross organisational boundaries.
-Anyone citing either number should carry those qualifiers.
+**On its prevalence study.** The sub-1% permission-declaration figure is labelled indicative in
+the paper, produced by a fragile parser, with n=31 true positives of 6,145 files, and is not
+the study's headline finding. The headline finding is that agent configurations propagate as
+undeclared shared components: 10.1% of tracked paths are exact duplicates across repositories,
+75.5% of clone pairs crossing organizational boundaries. Two further qualifiers for anyone
+citing it: the sample is 10,008 *public* repositories, which is not the enterprise population,
+and no base rate for configuration-file cloning is offered, so a cross-organization clone may
+be a widely adopted good default rather than an ungoverned copy.
 
 ## Enterprise control architecture: CASE
 
 The CASE framework (Telukunta, Lilis & Baron, [arXiv:2608.10153](https://arxiv.org/abs/2608.10153),
-cs.AI, August 2026) is a four-layer control architecture for enterprise agentic AI --
-control theory for the individual agent, complex adaptive systems for collectives,
-supervisory cybernetics for human-agent teams, engineering operations for fleets at scale --
-with a five-level maturity model and an assessment instrument.
-
-Its third layer is the nearest published treatment of human-agent team structure. It governs
-enterprise agent operations generally rather than software delivery; coding agents are not
-addressed, and delegation is not a framework concept. It is useful here as the enterprise
-frame into which a delivery method like this one would sit, not as an alternative to it.
+August 2026) is a four-layer control architecture for enterprise agentic AI, with a five-level
+maturity model and an assessment instrument. Its third layer, on human-agent teams, is the
+nearest published treatment of team structure. It governs enterprise agent operations generally
+rather than software delivery; coding agents are not addressed.
 
 ## Environment isolation
 
-The techniques in L1 and L2 are not novel and are not claimed as such. Vendor and
-practitioner guidance -- NVIDIA's AI red team, JetBrains, and others -- has converged on the
-same answers: a worktree is not a security boundary, egress should be default-deny with an
-allowlist, DNS is an exfiltration path, metadata endpoints and private ranges should be
-blocked, credentials belong outside the sandbox, and isolation strength runs microVM over
-user-space kernel over container.
+The techniques in L1 and L2 are not novel and are not claimed as such. Vendor and practitioner
+guidance has converged on the same answers: a worktree is not a security boundary, egress
+should be default-deny with an allowlist, DNS is an exfiltration path, metadata endpoints and
+private ranges should be blocked, credentials belong outside the sandbox, and isolation strength
+runs microVM over user-space kernel over container.
 
-What is missing from that body of work is not the techniques but the shape: it exists as
-scattered advice rather than as a baseline with profiles, raise-triggers, recorded residual
-risks and a stated proof per control. L1 and L2 here are an attempt at that shape, built on
-findings that are largely other people's.
+What that body of work lacks is not the techniques but the shape: it exists as scattered advice
+rather than as a baseline with profiles, raise-triggers, recorded residual risks and a stated
+proof per control.
 
-## What appears to be unoccupied
+## What this method claims
 
-Four positions in this method are not, as far as this survey found, held by published work.
+Reduced from v0.2, and stated at the strength the evidence supports.
 
-1. **Agent delivery as an organisational design problem.** The literature treats it as a
-   human-factors problem (how one person supervises one agent) or a controls problem (how a
-   harness is restricted). This method treats it as organisation: span of control with a
-   number on it, levels that cost latency and dilute intent, escalation that filters at each
-   level, and named topologies through to a matrix.
-2. **Delegation that nests and only narrows, with authority that is never relayed.** The
-   failure mode in §2 -- "the owner said you may", sent by an orchestrator, is not a grant --
-   appears in none of the works surveyed. It only becomes visible above one level of
-   hierarchy.
-3. **Owner attention as a measured quantity.** GAIE argues review overhead consumes the gain
-   but defines no reviewer-load metric; Madatha states phase-gate overhead is unmeasured.
-   §14 here defines owner interrupts against real decisions, owner-wait time as the sum of
-   blocked worker time, and idle-worker time.
-4. **Per-layer profile selection.** Published maturity models assign one level to an
-   organisation or one tier to a task. Assurance profiles here are chosen independently per
-   layer, from triggers, with coherence rules and recorded residual risk where a layer sits
-   below its profile.
+**1. A measurement proposal, which is the part most likely to be new.** §14 defines the owner's
+queue as the thing to instrument: owner interrupts against real decisions, owner-wait time as
+the sum of blocked work waiting on a person, and idle-worker time. The oversight-tiering
+literature argues about how much oversight to apply without a unit for its cost -- Kang's
+figures are modelled, Madatha's overhead is unmeasured. A related and sharper claim: oversight
+cost is treated as per-decision when it behaves as a scheduling cost, which makes queueing
+theory the right apparatus rather than per-task tiering. This method proposes the measures and
+has not published them, so the claim is a proposal, not a result.
+
+**2. A synthesis into one adoptable baseline.** Eight layers, three profiles chosen
+independently per layer with explicit raise-triggers, coherence rules, recorded accepted
+residual risks and a stated proof per control. The constituent controls come from the bodies of
+work above. The contribution is their assembly into something a single owner can adopt and an
+auditor can hold, which is standards work rather than research novelty.
+
+**3. An open question this method does not answer.** Human delegation is load-bearing on
+properties agents lack: an agent holds no reputation across grants, learns nothing from being
+revoked, and cannot bear a consequence. Responsibility therefore collapses onto the human in
+every case, which is why §1's first principle puts authority there. The disanalogies may matter
+more than the transfers -- no human organization has a class of participant that loses its
+policy memory at unpredictable intervals. This method is built on the organizational
+resemblance and does not yet account for where it fails.
 
 ## Works cited
 
-- Kang, R. (2026). *Governed AI-Assisted Engineering: Graduated Human Oversight for Agentic
-  Code Generation in Regulated Domains*. arXiv:2606.22484 [cs.HC].
-- Madatha, P. (2026). *A Deterministic Control Plane for LLM Coding Agents*.
-  arXiv:2606.26924 [cs.SE].
-- Telukunta, S., Lilis, G. N., & Baron, L. (2026). *The CASE Framework: A Multi-Disciplinary
-  Control Architecture for Governing Enterprise Agentic AI*. arXiv:2608.10153 [cs.AI].
-- Dhanorkar, S., Passi, S., & Vorvoreanu, M. (2026). *Human oversight of agentic systems in
-  practice*. arXiv:2606.05391.
-- OWASP GenAI Security Project. *State of Agentic AI Security and Governance* v2.01, and
-  *Top 10 for Agentic Applications* (2026). https://genai.owasp.org/initiatives/agentic-security/
+- Wooldridge, M., Jennings, N. R., & Kinny, D. (2000). *The Gaia Methodology for Agent-Oriented
+  Analysis and Design*. Autonomous Agents and Multi-Agent Systems, 3(3), 285-312.
+- Hübner, J. F., Sichman, J. S., & Boissier, O. (2002). *MOISE+: Towards a Structural,
+  Functional and Deontic Model for MAS Organization*. AAMAS 2002.
+- Hardy, N. (1988). *The Confused Deputy (or why capabilities might have been invented)*. ACM
+  SIGOPS Operating Systems Review, 22(4).
+- Birgisson, A., et al. (2014). *Macaroons: Cookies with Contextual Caveats for Decentralized
+  Authorization in the Cloud*. NDSS 2014.
+- Jones, M., et al. (2020). *OAuth 2.0 Token Exchange*. RFC 8693.
+- Graicunas, V. A. (1933). *Relationship in Organization*. Bulletin of the International
+  Management Institute. Urwick, L. (1956). *The Manager's Span of Control*. Harvard Business
+  Review.
+- *Harness Engineering for Agentic AI Coding Tools: An Exploratory Study*. arXiv:2602.14690.
+- Kang, R. (2026). *Governed AI-Assisted Engineering*. arXiv:2606.22484 [cs.HC].
+- Madatha, P. (2026). *A Deterministic Control Plane for LLM Coding Agents*. arXiv:2606.26924 [cs.SE].
+- Telukunta, S., Lilis, G. N., & Baron, L. (2026). *The CASE Framework*. arXiv:2608.10153 [cs.AI].
+- *Organization of Multi-Agent Systems: An Overview*. arXiv:1506.09032, as a survey entry point
+  to the organizational-model literature.
 
-All three arXiv works above are preprints with no stated venue at the time of writing.
+The 2026 arXiv works above are preprints with no stated venue at the time of writing.

@@ -4,6 +4,37 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.3 -- 2026-10-19
+
+Changed
+
+- `related-work.md` substantially rewritten. The v0.2 version claimed four positions in this
+  method were unaddressed in published work. That was wrong. Multi-agent organizational models
+  (Gaia 2000; MOISE/MOISE+ 2002, including role cardinality) formalised the organization as a
+  specified governance object two decades ago, and capability security has specified
+  non-relayable, narrowing-only delegation since Hardy's confused deputy in 1988, with macaroons
+  and RFC 8693 as deployed implementations. Harness engineering is named as the third layer the
+  method's model-versus-organization framing omitted.
+- The characterisation of Madatha corrected: his gated phase machine with delegation receipts
+  and human escalation points is an authority structure, not only an enforcement primitive. The
+  v0.2 classification kept the organizational ground vacant for this method and does not hold.
+- Claims reduced to three: the owner's-queue measurement proposal, the synthesis into one
+  adoptable baseline, and one open question this method does not answer.
+- Added agent orchestration frameworks as the nearest prior art of all: CrewAI's hierarchical
+  manager process with per-agent delegation flags, and MetaGPT's software-company roles with
+  document hand-off between them. Also records why they are where this method's narrow claim
+  survives: CrewAI delegation is a tool the manager calls, not a credential the receiver can
+  verify.
+- Added what the prior art does not cover, so the correction does not overshoot: Hardy is an
+  operating-system result, MOISE+ and Gaia specify designed cooperative agents with no human
+  owner and no policy-memory loss, and no coding-agent harness currently implements verifiable
+  grants at the session boundary.
+- Qualifiers added for citing others: Kang's velocity figures are modelled rather than measured,
+  and Madatha's prevalence sample is public repositories with no base rate for config cloning.
+
+No change to any principle, role, control, profile or metric. The §2.1 span figure stands as
+this practice's operating limit and is now explicitly not presented as a result.
+
 ## v0.2 -- 2026-10-19
 
 Added
