@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: Governed semi-autonomous development
+message: If you use this method, please cite it.
+type: software
+authors:
+  - family-names: Simon
+    given-names: Levente
+    website: "https://leventesimon.com"
+abstract: >-
+  A tool-agnostic reference method for governing teams of AI agents that build production
+  software: roles and authority, control layers, assurance profiles and metrics. Agents do
+  the work; humans keep authority over everything irreversible or outward-facing.
+version: "0.1"
+date-released: "2026-10-19"
+license: CC-BY-4.0
+url: "https://github.com/levente-simon/governed-semi-autonomous-development"
+repository-code: "https://github.com/levente-simon/governed-semi-autonomous-development"
+keywords:
+  - agentic AI
+  - multi-agent systems
+  - AI-native development
+  - software engineering methodology
+  - governance
+  - assurance

@@ -462,9 +462,13 @@ As starting points:
 
 Layers may sit at different profiles if they stay consistent. For example, High L4 with Lite L6 is coherent only when all sessions share one environment. Record the level per layer in the kickoff manifest. A layer below the chosen profile needs a recorded decision.
 
-## 14. Metrics
+## 13. Reference implementation
 
-(§13, the reference implementation, is in [claude-code-reference.md](claude-code-reference.md).)
+The method is tool-agnostic. One concrete mapping -- roles, layers, patterns and rituals on
+Claude Code, with its documented caveats and templates -- is in
+[claude-code-reference.md](claude-code-reference.md).
+
+## 14. Metrics
 
 Every metric has a source in the ledger. None is a target in itself, because a metric used as a target gets gamed. Every profile keeps a minimal set: escaped defects, owner interrupts and rule breaches. The full set is required at High.
 

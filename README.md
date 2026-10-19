@@ -4,7 +4,8 @@ A tool-agnostic reference method for governing teams of AI agents that build pro
 
 The method is designed around three properties at once: **secure**, **correct** and **efficient**. Efficiency never overrides the other two. It is not a security guide: it describes how to organise, run and control agent teams, with security as one property among three.
 
-**Status:** v0 draft.
+**Status:** v0.1 draft, 2026-10-19. Corrections, questions and adoption reports are
+welcome as [issues](../../issues).
 
 ## Documents
 
@@ -22,6 +23,19 @@ Start with [method.md](method.md). The other two documents go deeper on demand.
 - **Execution patterns:** single session, sequential slices, scripted fan-out, project team, function teams, matrix.
 - **Eight control layers:** infrastructure isolation, session isolation, tool control, permissions and delegation, repository, messages, process, state and audit.
 - **Assurance profiles:** Lite, Standard and High, chosen per layer.
+
+## Origin
+
+This method comes out of building [dethernety](https://dether.net), a commercial,
+graph-native threat modeling platform: a solo build since 2025, open-sourced in March 2026,
+and delivered through twelve minor releases since. The method is not how that work started.
+It emerged partway through, as the work outgrew a single session and moved to agent teams,
+and the controls here are what that transition produced.
+
+It is a working method rather than a proposal. Most of its controls exist because something
+went wrong without one; the learning loop in [method.md](method.md) §11 is how they arrived.
+The evidence base is a single product, which is stated here because it bounds what the
+method can claim.
 
 ## License
 
