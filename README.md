@@ -14,8 +14,9 @@ welcome as [issues](../../issues).
 | [method.md](method.md) | Leads and founders deciding whether to adopt it | Principles, roles and execution patterns, artefacts and the ledger, lifecycle and documentation chain, control layers in summary, specialists, capabilities, federation, quality and efficiency techniques, learning loop, assurance profiles, metrics, glossary |
 | [control-reference.md](control-reference.md) | Security and platform teams implementing it | Every control per layer (what it prevents, what it serves, its cost, its profile, its proof), the delegation and signing model, the message bus, the decision classifier, the release kit, a threat-model plan, the control-to-profile map |
 | [claude-code-reference.md](claude-code-reference.md) | Teams implementing it on Claude Code | How roles, layers, patterns and rituals map to Claude Code features, with the documented caveats; templates; the planned operator's handbook |
+| [related-work.md](related-work.md) | Readers placing this against published work | How this relates to graduated-oversight and harness-enforcement work published in 2026, what those reached first, and the four positions here that appear unoccupied |
 
-Start with [method.md](method.md). The other two documents go deeper on demand.
+Start with [method.md](method.md). The others go deeper on demand.
 
 ## At a glance
 
