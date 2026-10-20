@@ -4,7 +4,7 @@ A tool-agnostic reference method for governing teams of AI agents that build pro
 
 The method is designed around three properties at once: **secure**, **correct** and **efficient**. Efficiency never overrides the other two. It is not a security guide: it describes how to organise, run and control agent teams, with security as one property among three.
 
-**Status:** v0.3 draft, 2026-10-19. Corrections, questions and adoption reports are
+**Status:** v0.4 draft, 2026-10-20. Corrections, questions and adoption reports are
 welcome as [issues](../../issues).
 
 ## Documents
@@ -14,7 +14,7 @@ welcome as [issues](../../issues).
 | [method.md](method.md) | Leads and founders deciding whether to adopt it | Principles, roles and execution patterns, artefacts and the ledger, lifecycle and documentation chain, control layers in summary, specialists, capabilities, federation, quality and efficiency techniques, learning loop, assurance profiles, metrics, glossary |
 | [control-reference.md](control-reference.md) | Security and platform teams implementing it | Every control per layer (what it prevents, what it serves, its cost, its profile, its proof), the delegation and signing model, the message bus, the decision classifier, the release kit, a threat-model plan, the control-to-profile map |
 | [claude-code-reference.md](claude-code-reference.md) | Teams implementing it on Claude Code | How roles, layers, patterns and rituals map to Claude Code features, with the documented caveats; templates; the planned operator's handbook |
-| [related-work.md](related-work.md) | Readers placing this against published work | The prior art for this method's organizational and delegation claims, what it does and does not cover, and what this method claims at the strength its evidence supports |
+| [related-work.md](related-work.md) | Readers placing this against published work | The bodies of work this method is built out of, why they do not simply apply to this setting, and what the method is. No novelty claim |
 
 Start with [method.md](method.md). The others go deeper on demand.
 

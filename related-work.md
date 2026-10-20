@@ -1,18 +1,19 @@
 # Related work
 
-*How this method relates to published work, and where it differs. Current as of October 2026.
+*How this method relates to published work, and where it differs. Current as of 20 October 2026.
 Corrections and additions are welcome as issues.*
 
-**Correction notice (v0.3).** The v0.2 version of this document claimed four positions in this
-method were unaddressed in published work. That claim was wrong, and wrong in a way worth
-recording rather than quietly editing: the survey behind it covered 2026 preprints on coding
-agents and missed two established bodies of work that address the same properties directly.
-Multi-agent *organizational models* formalised roles, groups and role cardinality two decades
-ago. Capability security has specified non-relayable, narrowing-only delegation since the
-1980s. Both are described below, and the claims in this method are reduced accordingly.
+This document exists to place the method, not to stake a claim. It makes no novelty claim and
+no priority claim.
 
-The method was developed from delivery rather than from the literature. That explains the
-original omission; it does not excuse it.
+**Correction notice (v0.4).** The v0.2 version of this document claimed four positions in this
+method were unaddressed in published work. That claim is withdrawn. The survey behind it covered
+2026 preprints on coding agents and missed multi-agent organizational models, capability
+security, harness engineering and the orchestration frameworks, all of which address the same
+properties directly. Rather than restate the claim more carefully, it is gone: a reference method
+does not need to be first, and a gap claim is the one thing in a document like this that can be
+wrong at the author's expense. The method is offered as a way to do the work, and the literature
+below is offered so a reader can see what it is built out of.
 
 | Work | Governs | Unit of control | Evidence basis |
 |---|---|---|---|
@@ -110,15 +111,16 @@ Exchange, 2020) provides downscoped tokens enforced by the authorization server,
 claim recording a delegation chain.
 
 The agent case is also already being worked: IETF drafts exist on attenuating agent tokens and
-on OAuth chain delegation for agent-to-tool calls. So "delegation that nests and only narrows"
-and "authority that cannot be relayed" are not unoccupied positions. They are known properties
-whose enforcement points are missing from current agent harnesses, which is a different and
-much narrower claim.
+on OAuth chain delegation for agent-to-tool calls. Delegation that only narrows, and authority
+that cannot be relayed, are therefore well-specified properties with deployed implementations.
+What this method does with them is require them of agent sessions, where the enforcement points
+are currently missing.
 
-## What the prior art does not cover
+## Why the prior art does not simply apply
 
-The works above establish that the properties this method relies on are known. They do not
-settle the setting.
+A fair question from anyone reading the sections above is why this method exists at all rather
+than an adoption of MOISE+ with macaroons underneath. The honest answer is about setting rather
+than about priority.
 
 - **Hardy (1988) is about an operating system.** A compiler, a directory, a billing file, one
   machine. It names the property -- authority attaching to the running program rather than to
@@ -140,9 +142,8 @@ settle the setting.
   irreversible outward actions, an assurance profile scaled to risk, environment isolation, or
   any measure of what the arrangement costs the human in the loop.
 
-So the honest position is: these properties are old, their application to agent delivery is
-active and contested, and nothing in this method's delegation design should be read as new
-security engineering.
+None of that makes this method novel. It means the known properties have to be assembled for a
+setting their originators were not addressing, and that assembly is what the method is.
 
 ## Harness engineering
 
@@ -232,26 +233,22 @@ What that body of work lacks is not the techniques but the shape: it exists as s
 rather than as a baseline with profiles, raise-triggers, recorded residual risks and a stated
 proof per control.
 
-## What this method claims
+## What this method is
 
-Reduced from v0.2, and stated at the strength the evidence supports.
+**A synthesis assembled for one setting.** Eight layers, three profiles chosen independently per
+layer with explicit raise-triggers, coherence rules, recorded accepted residual risks and a
+stated proof per control. The constituent controls come from the bodies of work above. What is
+offered is their assembly into something a single owner can adopt and an auditor can hold.
 
-**1. A measurement proposal, which is the part most likely to be new.** §14 defines the owner's
-queue as the thing to instrument: owner interrupts against real decisions, owner-wait time as
-the sum of blocked work waiting on a person, and idle-worker time. The oversight-tiering
-literature argues about how much oversight to apply without a unit for its cost -- Kang's
-figures are modelled, Madatha's overhead is unmeasured. A related and sharper claim: oversight
-cost is treated as per-decision when it behaves as a scheduling cost, which makes queueing
-theory the right apparatus rather than per-task tiering. This method proposes the measures and
-has not published them, so the claim is a proposal, not a result.
+**A method that instruments the owner.** §14 treats the owner's queue as a thing to measure:
+owner interrupts against real decisions, owner-wait time as the sum of blocked work waiting on a
+person, and idle-worker time. The measures are defined here and have not been published from this
+practice, so they are a proposal for what to collect rather than a reported result. A reader
+weighing the oversight-cost literature should note that Kang's velocity figures are modelled and
+Madatha's phase-gate overhead is explicitly unmeasured, so there is currently little measured
+data on any side.
 
-**2. A synthesis into one adoptable baseline.** Eight layers, three profiles chosen
-independently per layer with explicit raise-triggers, coherence rules, recorded accepted
-residual risks and a stated proof per control. The constituent controls come from the bodies of
-work above. The contribution is their assembly into something a single owner can adopt and an
-auditor can hold, which is standards work rather than research novelty.
-
-**3. An open question this method does not answer.** Human delegation is load-bearing on
+**An open question this method does not answer.** Human delegation is load-bearing on
 properties agents lack: an agent holds no reputation across grants, learns nothing from being
 revoked, and cannot bear a consequence. Responsibility therefore collapses onto the human in
 every case, which is why §1's first principle puts authority there. The disanalogies may matter

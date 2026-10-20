@@ -4,6 +4,25 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.4 -- 2026-10-20
+
+Changed
+
+- **The novelty claim is withdrawn rather than restated.** v0.3 corrected the v0.2 gap claim and
+  narrowed it. This version removes it. A reference method does not need to be first, and a gap
+  claim is the one thing in a document like this that can be wrong at the author's expense: the
+  survey behind it missed established work twice, so the claim is gone instead of hedged again.
+  `related-work.md` now states that it makes no novelty and no priority claim.
+- The credits stay. What Kang and Madatha published first is still recorded, and the prior art is
+  kept for orientation, so a reader can see what the method is assembled from.
+- "What the prior art does not cover" is now "Why the prior art does not simply apply", framed as
+  a question about setting rather than a claim to territory, and it closes on "none of that makes
+  this method novel".
+- "What this method claims" is now "What this method is": a synthesis assembled for one setting, a
+  method that instruments the owner, and one open question it does not answer.
+
+No change to any principle, role, control, profile or metric.
+
 ## v0.3 -- 2026-10-19
 
 Changed

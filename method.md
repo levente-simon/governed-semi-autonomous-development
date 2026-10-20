@@ -24,7 +24,7 @@ It also covers how that unit cooperates with other agent teams and function agen
 | **method.md** (this document) | Engineering leads and founders deciding whether and how to adopt | Principles, topology, lifecycle, controls in summary, techniques, profiles, metrics, glossary |
 | [control-reference.md](control-reference.md) | Security and platform teams implementing the controls | Every control with what it prevents, cost, profile and proof; the delegation and signing model; the threat-model plan; the control-to-profile map |
 | [claude-code-reference.md](claude-code-reference.md) | Teams implementing the method on Claude Code | The tool mapping with its caveats, templates, and the planned operator's handbook |
-| [related-work.md](related-work.md) | Readers placing this against published work | Published work on graduated oversight and harness enforcement, what it reached first, and where this method differs |
+| [related-work.md](related-work.md) | Readers placing this against published work | The organizational, capability-security, harness and orchestration work this method is built out of, and why it does not simply apply here |
 
 The method is tool-agnostic. Only claude-code-reference.md names a tool.
 
