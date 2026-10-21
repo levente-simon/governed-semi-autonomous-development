@@ -4,6 +4,23 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.5 -- 2026-10-21
+
+Changed
+
+- **Breaking: required CI moves from Standard to Lite.** At Lite every other check is an agent's
+  report; without CI, Lite had no independent verification. Lite requires a minimum set (build,
+  test suites, type and lint checks, a secret scan); Standard runs the full suite.
+- **CI is named as the out-of-band verifier.** New subsection in `control-reference.md` L5: the
+  host enforces the gate, agents cannot change what verifies them, runners are separate from agent
+  environments, and results are read from the host by commit. New L5 control "CI kept out of band"
+  at Lite. At High, CI is the deterministic half of release verification and the second party the
+  judgement half.
+- Threat-model plan: a threat class for agents influencing their own verification, and CI added
+  to the mitigations of fabricated release evidence.
+- `claude-code-reference.md` L5: local review commands never stand in for CI; read results from
+  the host by commit; how release secrets are kept from PR code on GitHub.
+
 ## v0.4 -- 2026-10-20
 
 Changed

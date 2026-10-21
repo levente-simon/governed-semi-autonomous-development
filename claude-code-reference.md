@@ -70,7 +70,7 @@ This document maps the method to Claude Code. Features named here appear in the 
   - Whether a hook's `"allow"` decision also bypasses the auto-mode classifier is not documented (to verify). High sessions with grantable actions therefore run without auto mode, or keep grantable classes clear of classifier blocks.
 - **Forks.** Session approvals do not carry into a `--fork-session` process, because it is a new process. `/branch` runs in the same process and does carry them. Neither is ever a grant.
 
-**L5.** Branch protection, required CI, code-owner rules, signed tags and reproducible builds live on the git host and the build system. The local `/code-review` command, and `/security-review`, are inputs to the deliverable review.
+**L5.** Branch protection, required CI, code-owner rules, signed tags and reproducible builds live on the git host and the build system. The local `/code-review` command, and `/security-review`, are inputs to the deliverable review. They run inside the agent environment, so they never stand in for CI. Sessions read CI results from the host by commit (on GitHub, for example `gh run list --branch <branch> --json headSha,name,conclusion`), never from another session's report. On GitHub, `pull_request` withholds secrets only from fork PRs; branches pushed to the same repository receive them. Release credentials therefore live in a deployment environment restricted to main, with required reviewers, and code from PRs never runs under `pull_request_target`.
 
 **L6.**
 

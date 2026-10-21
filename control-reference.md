@@ -248,7 +248,8 @@ At High, a release needs two independent parties: the owner and a second reviewe
 | Owner-only merge and tag | Agents creating outward history | S | Owner time | Lite |
 | Boundary scans, including the ledger ref | Private paths, names or identifiers leaking into a public repository | S | Scan upkeep; false positives | Lite, where a public mirror exists |
 | Fresh integration branch per vehicle, owned by the orchestrator | Slices merged without integrated testing; force pushes to reset a used branch | C | Branch upkeep | Standard |
-| Required CI | Merges that pass locally only | C | CI time and cost | Standard |
+| Required CI, enforced by the host | Merges that rest on an agent's report or pass only locally; a ritual or agent skipping a check | S, C | CI time and cost | Lite: minimum set. Standard: full suite |
+| CI kept out of band | Agents influencing, skipping or forging their own verification; secrets exposed to unreviewed code | S | Runners separate from agent environments; workflow discipline | Lite |
 | Protected-path review | Changes to the enforcement and release machinery travelling the same path as feature code | S | Owner reads those diffs; one fixed security pass | Standard |
 | Signed commits and tags | Forged or unattributable history | S | Key management | High |
 | Reproducible builds | Artefacts that cannot be tied to source | S, C | Build hermeticity | High |
@@ -256,6 +257,21 @@ At High, a release needs two independent parties: the owner and a second reviewe
 ### Integration branches
 
 After a vehicle merges, the next vehicle's integration branch is cut fresh from main, and workers rebase onto it. No force push, backup branch or reset is needed. The post-merge ritual prunes old branches after confirmation.
+
+### Out-of-band verification
+
+CI is the method's out-of-band verifier. It runs outside every agent environment, on infrastructure agents cannot write, with credentials agents do not hold, against the exact commit that will merge. Its result is deterministic and recorded by the repository host. Every other check before a merge runs inside an agent environment and reaches the owner as an agent's report, rituals included. CI is the one result the agents cannot produce for themselves.
+
+Four rules keep it out of band:
+
+- **The host enforces the gate.** Branch protection requires the checks before a merge, so neither an agent nor a ritual can skip them. Bypassing them is an owner decision, recorded in the decision register.
+- **Agents cannot change what verifies them.** Changes to CI workflows reach the owner as the diff at every profile; this is the one protected path Lite already requires. Workflows triggered by agent changes get no secrets and no write tokens. Only workflows running reviewed code from main hold release credentials.
+- **Runners are separate from agent environments.** A self-hosted runner never shares a host, a network segment or credentials with an agent environment.
+- **Results are read from the host, by commit.** A merge or release decision cites the host's conclusion for the exact commit. An agent's "CI is green" is a claim. "Pending" is not green.
+
+The minimum set at every profile is the build, the test suites, type and lint checks, and a secret scan. Standard runs the full suite, including slow and database suites, and the boundary scan where a public mirror exists. At High, CI is the deterministic half of release verification, and the second reviewer or independent verifier is the judgement half. Neither replaces the other.
+
+CI time is a real cost. The economy rules ([method.md](method.md), §10) keep it proportionate: local gates first, one CI run per vehicle, and a branch goes to CI only when it is ready to pass.
 
 ### Protected paths
 
@@ -271,7 +287,7 @@ Changes to these paths reach the owner as the diff itself. This is the one excep
 
 A security pass reviews each such change. Its brief is a fixed ritual that the orchestrator does not author. At Standard this can be a code-owners rule on the repository host.
 
-*Proof: branch protection, CI configuration, code-owner rules, scan configuration, signed tags.*
+*Proof: branch protection with required checks, the host's check conclusions per merged commit, CI configuration, runner placement, code-owner rules, scan configuration, signed tags.*
 
 ## L6 Message controls
 
@@ -419,7 +435,7 @@ This map lists every control in this reference at the lowest profile that requir
 | L2 | Worktree per session; unique project names and ports plus resource registry where more than one session runs services; no standing approvals | Clone per environment; internal git remote as the only shared surface; own runtime; own identity | Per-ref push enforcement; separate OS identity and credentials |
 | L3 | Deny push, publish and secret reads; enforcement material read-only to the session; enforcing checks fail closed; agent tooling from an owner-approved list | Hooks for environment rules; wrapped commands; pinned agent tooling with auto-update off and changes through protected-path review | Allow-list only |
 | L4 | Owner performs all outward actions from a checkout agents cannot write | Role permission sets; delegation manifest; planned delegations in tool configuration, exercised at kickoff; grants as the owner's answer to the tool's permission prompt | Owner-signed, instance-bound, time-bound grants with closed scopes, on-device signing and owner-only revocation; two-party release rule with the independent verifier for a sole owner |
-| L5 | No commits on main; PRs; owner-only merge and tag; boundary scans (including the ledger ref) where a public mirror exists | Fresh orchestrator-owned integration branch per vehicle; required CI; protected-path review | Signed commits and tags; reproducible builds |
+| L5 | No commits on main; PRs; owner-only merge and tag; required CI (minimum set) enforced by the host and kept out of band; boundary scans (including the ledger ref) where a public mirror exists | Fresh orchestrator-owned integration branch per vehicle; full CI suite; protected-path review | Signed commits and tags; reproducible builds |
 | L6 | Authority never relayed; local messaging with tool-attributed senders | Content as repository references; authenticated messaging, including a cross-environment channel where needed; message audit written by the transport | Private bus with full requirements; filtering and provenance on untrusted content; decision classifier at the gateway and content ingestion |
 | L7 | Plan and design review; deliverable review on the final diff; pre-PR gate (covering tests, final-diff review, leftover scan); pre-PR and post-merge rituals | Security lens; security review and acceptance-criteria trace in the pre-PR gate; leftover sweep per checkpoint; checkpoint review | Multi-lens review; rehearsed, reproduce-gated release kit; external reviewer |
 | L8 | Ledger on its own ref; decision register; claims only from output; minimal metrics | Message audit written by the transport | Tamper-evident audit trail anchored outside the writer; full metric set |
@@ -492,6 +508,7 @@ The reference flow is threat-modelled in **Dethernety**, the threat-modelling pr
 - destructive commands escaping their target;
 - supply-chain compromise, including through bot-opened update PRs and agent tooling;
 - unreviewed changes reaching main, tags or the mirror, including changes to protected paths;
+- agents influencing, skipping or forging their own verification;
 - private information leaking into a public mirror, including through the ledger ref;
 - release-artefact tampering, fabricated release evidence, or divergence from rehearsal;
 - ledger tampering or state loss;
@@ -502,7 +519,8 @@ The reference flow is threat-modelled in **Dethernety**, the threat-modelling pr
 - **Prompt injection:** L1 isolation, L3 tool control, the L6 deterministic checks and references-only rule, the L6 decision classifier at High, and the L7 review of deliverables.
 - **Grant replay:** instance binding and expiry (L4).
 - **Revocation suppression:** the owner-only revocation location and fail-closed reads (L4).
-- **Fabricated release evidence:** the independent verifier's own evidence rebuild and required signed verdict (L4).
+- **Fabricated release evidence:** required CI read from the host by commit (L5), and the independent verifier's own evidence rebuild and required signed verdict (L4).
+- **Agents tampering with their own verification:** CI kept out of band, CI workflows as protected paths (L5).
 
 The planned deliverables are:
 
