@@ -233,6 +233,42 @@ What that body of work lacks is not the techniques but the shape: it exists as s
 rather than as a baseline with profiles, raise-triggers, recorded residual risks and a stated
 proof per control.
 
+## When multiple agents help
+
+Practitioner and research work since 2024 converges on one point: more agents is not better by
+default, and whether they help depends on how the work decomposes.
+
+Anthropic's guidance on building agents (2024) starts from "the simplest solution that works" and
+names the patterns this method's execution patterns draw on: routing, orchestrator-workers and
+evaluator-optimizer. Its account of a multi-agent research system (2025) reports roughly fifteen
+times the tokens of a chat interaction for a multi-agent setup, gains on breadth-first research,
+and the observation that most coding tasks are less parallelisable than research. It also stresses
+detailed delegation briefs and effort scaled to complexity.
+
+Kim et al. (2025) measured 180 configurations across four task families and three model families.
+Multi-agent coordination improved a parallelisable task by up to 81% and degraded a sequential one
+by 39-70%. Independent agents amplified errors up to 17 times, a centralised orchestrator 4.4
+times. Task decomposability and tool count predicted the best architecture for most unseen
+configurations. This method's rule of choosing a pattern by coupling rather than size, its default
+to one agent for sequential work, and its routing of workers through one orchestrator follow the
+same direction. Their study did not test multi-level hierarchies, so it neither supports nor
+contradicts patterns P5 and P6.
+
+Cognition's two posts trace a practitioner's position over ten months. The first (2025) argued
+against multi-agent systems: agents need shared context, and "actions carry implicit decisions",
+so parallel agents with different assumptions produce clashing work. The second (2026) reports what
+now works in their product: writes kept single-threaded, reviewers given a clean context, escalation
+to a stronger model that receives the primary's context, and manager-child delegation. Parallel
+writers into shared work still do not. This method's project team runs workers in parallel on
+separate branches with orchestrator-owned integration, which is the manager-child shape; its
+assumptions field, clean-context reviewers and tier escalation address the same failure modes. Both
+posts rest on internal, mostly anecdotal evidence.
+
+Cemri et al. (2025) built a taxonomy of fourteen multi-agent failure modes in three categories
+(system design, inter-agent misalignment, task verification) from more than 1,600 annotated traces.
+The method's learning loop can tag incidents with these categories, so that one practice's
+incidents can be compared with published failure data.
+
 ## Calibrated decision models
 
 The decision classifier (control reference, L6) and the action classifier (L3) assume a model
@@ -300,6 +336,15 @@ resemblance and does not yet account for where it fails.
 - Telukunta, S., Lilis, G. N., & Baron, L. (2026). *The CASE Framework*. arXiv:2608.10153 [cs.AI].
 - *Organization of Multi-Agent Systems: An Overview*. arXiv:1506.09032, as a survey entry point
   to the organizational-model literature.
+- Anthropic (2024). *Building effective agents*. Anthropic Engineering, 19 December 2024.
+- Anthropic (2025). *How we built our multi-agent research system*. Anthropic Engineering,
+  13 June 2025.
+- Kim, Y., Gu, K., Park, C., et al. (2025). *Towards a Science of Scaling Agent Systems*.
+  arXiv:2512.08296 [cs.AI]; summarised on the Google Research blog, 28 January 2026.
+- Yan, W. (2025). *Don't Build Multi-Agents*. Cognition, 12 June 2025.
+- Yan, W. (2026). *Multi-Agents: What's Actually Working*. Cognition, 22 April 2026.
+- Cemri, M., Pan, M. Z., Yang, S., et al. (2025). *Why Do Multi-Agent LLM Systems Fail?*
+  arXiv:2503.13657 [cs.AI].
 - Guo, R., Liu, Y., Deng, G., Li, Y., Zhao, L., Wu, Y., Chen, S., Zhang, Y., & Zhang, L. Y.
   (2026). *Just Ask Jev: Reinforcement Learning for Calibrated Decisions as a Zero-Shot Detector
   of AI Alignment Failures*. arXiv:2609.29429 [cs.AI].

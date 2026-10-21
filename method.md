@@ -82,7 +82,7 @@ Execution patterns say how the work is organised. Assurance profiles (§12) say 
 | **P1 Single session** | The owner works with one agent; specialists run as subagents | Bounded changes, fixes, spikes | None, or a short note | Owner | Owner | The change itself plus a short note |
 | **P2 Sequential slices** | One agent executes a plan of linear slices, one after another. Each slice starts in a fresh session or after a planned compaction | Medium-complexity, well-defined features; tightly coupled work; changes where the owner wants per-slice control | Linear slices | Owner. A specialist review may inform the approval but never replaces it | Owner | The plan file with per-slice status is the ledger |
 | **P3 Scripted fan-out** | One session runs a deterministic script that fans out to many short-lived agents and merges the results | Breadth work: multi-lens reviews, batch generation, census, migrations across many files | The fan-out script and its merge step | The session that runs the script | That session, which then follows its own pattern's path | None between runs, unless it runs a capability: then the capability's ledger. Runs are read-only or output-only by default |
-| **P4 Project team** | An orchestrator plus workers in isolated environments, with one ledger: the main case of this method | Multi-week initiatives with parallel lanes | Lanes, slices, checkpoints, ownership partition | Orchestrator, within delegated scope | Worker → orchestrator → owner | Project ledger |
+| **P4 Project team** | An orchestrator plus workers in isolated environments, with one ledger: the main case of this method. Each worker writes only on its own branch, within its ownership; the orchestrator alone integrates | Multi-week initiatives whose work splits into independent lanes | Lanes, slices, checkpoints, ownership partition | Orchestrator, within delegated scope | Worker → orchestrator → owner | Project ledger |
 | **P5 Function teams** | A standing team per function (for example frontend, backend, infrastructure, content), each with a lead orchestrator and workers. Ownership follows function | Long-lived codebases | A project plan plus one plan per function | Function lead, within delegated scope | Worker → lead → owner | One ledger per function team |
 | **P6 Matrix** | A project orchestrator sends work to the function leads, who orchestrate their workers | Cross-functional initiatives on top of P5 | A project plan plus one plan per function | Function lead, within delegated scope | Worker → lead → project orchestrator → owner | Project ledger plus one per function team |
 
@@ -91,10 +91,13 @@ Execution patterns say how the work is organised. Assurance profiles (§12) say 
 - **P1 and P2** have no orchestrator. The owner holds the orchestrator's duties in the slice routine. An integration branch is optional.
 - **P2** gives maximum control, no merge conflicts and simple state. It costs parallelism, and an owner gate on every slice can become the bottleneck.
 - **P3** can be one step inside P2 or P4–P6. It never replaces a stateful worker.
+- **P4** runs workers in parallel but integrates in a single thread. Workers never write into the same artefact; the orchestrator merges. What this does not prevent is clashing assumptions: two slices can each be right alone and wrong together. Slice plans and hand-over notes therefore record the assumptions and decisions taken, and the orchestrator passes on those that touch other slices.
 
 **Rules.**
 
+- **Choosing by how the work decomposes.** The deciding property is not size but coupling. Tightly coupled or sequential work stays with one agent (P1, P2): there, coordination costs more than it returns, in tokens, in hand-offs and in errors that compound from agent to agent. Multi-agent patterns are for work that splits into parts that are independent in substance, not only in files. Tool load counts too: coordination cost rises with the number of tools each agent carries.
 - **Choosing and escalating.** The pattern is chosen at Shape or Plan and recorded in the plan and the ledger. Escalation is normal: move from P1 to P2 when the work needs a plan, and from P2 to P4 when independent lanes appear. A pattern change re-runs kickoff for the new roles.
+- **Patterns compose.** A plan may assign a pattern per segment: for example P2 for a serial core, and P4 for the branches that split from it. Each segment records its pattern.
 - **One slice routine.** Every pattern uses the same slice routine (§4). Only the approver changes: the owner in P1–P2, the orchestrator within delegated scope in P4–P6.
 - **Levels.** Add a level only when one orchestrator's span of control is exceeded (roughly three to four direct reports, plus peers and the owner), or when ownership is long-lived. Each level costs latency and tokens, and adds a translation step in which intent can dilute.
 - **Delegation nests and only narrows.** Each level's authority is bounded by the level above. The rules are in [control-reference.md](control-reference.md) (L4, Nested delegation).
@@ -154,7 +157,7 @@ Workers do the same with their slice plan, slice ledger and hand-over notes.
 | **Briefs** | A common brief and one per role: scope, environment constraints, routing rules, slice routine |
 | **Delegation manifest** | Who granted what to whom, with scope and expiry |
 | **Kickoff record** | The results of the kickoff tests per session |
-| **Slice plans, slice ledgers and hand-over notes** | The worker's plan, its state and grant use, and its account after work; committed on the worker branch so they can be reviewed and survive the loss of an environment |
+| **Slice plans, slice ledgers and hand-over notes** | The worker's plan, its state and grant use, and its account after work, including the assumptions and decisions taken; committed on the worker branch so they can be reviewed and survive the loss of an environment |
 | **Release run sheets** | The ordered steps, gates and evidence for one release vehicle |
 
 Required fields for each are in [claude-code-reference.md](claude-code-reference.md) (Templates).
@@ -281,7 +284,7 @@ Eight layers, from the outside in. This section gives what each layer achieves a
 
 | # | Layer | Objective | Typical controls | Serves |
 |---|---|---|---|---|
-| L1 | **Infrastructure isolation** | Contain blast radius of any session | Sandbox/container/VM per session; egress allow-list; no production credentials; throwaway data stores; lab environments separate from production | S |
+| L1 | **Infrastructure isolation** | Contain blast radius of any session | Isolated environments split by authority and input trust; egress allow-list; no production credentials; throwaway data stores; lab environments separate from production | S, C |
 | L2 | **Session isolation** | No interference between sessions | One session per clone and branch; own ports and runtime; own identity; shared-resource registry; an internal git remote as the only shared repository surface | S, C |
 | L3 | **Tool control** | Agents can only do what their role needs | Allow/deny lists; wrapped commands; pre-execution hooks enforcing environment rules; an action classifier on side-effecting calls (High) | S, C |
 | L4 | **Permission sets and delegation** | Authority is explicit, scoped and auditable | Role permission sets; delegation manifest (who granted what to whom, scope, expiry); grants given in the receiving session only | S |
@@ -290,7 +293,7 @@ Eight layers, from the outside in. This section gives what each layer achieves a
 | L7 | **Process controls** | Defects and leaks are caught at the cheapest stage | Plan and design review (security, correctness, quality); deliverable review on the final diff; leftover sweep; checkpoint review; acceptance-criteria trace; reproduce-gated release kit | S, C |
 | L8 | **State and audit** | The current picture and the full history are always recoverable | The orchestrator ledger (§3); decision register; message audit; claims only from output | C, E |
 
-**L1 Infrastructure isolation.** A mistaken or misled command damages one environment, never the owner's workstation or production. The key rule: no host or production credentials are mounted or forwarded into an agent environment, and destructive tests run only against stubs or throwaway stores.
+**L1 Infrastructure isolation.** A mistaken or misled command damages one environment, never the owner's workstation or production. The key rule: no host or production credentials are mounted or forwarded into an agent environment, and destructive tests run only against stubs or throwaway stores. Separating sessions is privilege separation, so the boundary follows authority and input trust, not the number of sessions: at Standard the orchestrator runs apart from the workers, and any session that ingests untrusted content or runs destructive work runs apart from the rest ([control-reference.md](control-reference.md), L1).
 
 **L2 Session isolation.** Parallel sessions cannot touch each other's files, processes, ports or identity. The key rule: environments never share a writable checkout or `.git` directory. Across environments, an internal git remote is the only shared surface.
 
@@ -300,7 +303,7 @@ Eight layers, from the outside in. This section gives what each layer achieves a
 
 **L5 Repository controls.** Nothing reaches main, a tag or a public mirror without review. The key rules: owner-only merge and tag; required CI enforced by the repository host, which is the one out-of-band, deterministic verification the agents cannot produce for themselves; and changes to the machinery that enforces the method (protected paths) reach the owner as the diff.
 
-**L6 Message controls.** Messages carry information, never authority. The key rule: content lives in committed files, and the message only says where. The receiver reads the file with its own tools and permissions.
+**L6 Message controls.** Messages carry information, never authority. The key rule: content lives in committed files, and the message only says where. The receiver reads the file with its own tools and permissions. How much context sessions share is a profile choice: at Lite, where all sessions share one trust domain, fuller context may be shared for correctness and efficiency; at Standard and High, references only ([control-reference.md](control-reference.md), L6).
 
 **L7 Process controls.** Defects and leaks are caught at the cheapest stage. The key rule: process controls run as rituals that encode the whole gate for the profile, so the gate is identical every time.
 
@@ -394,12 +397,12 @@ All techniques in this section apply at every profile.
 
   *E, C.*
 - **PR and CI economy.** One vehicle per checkpoint or release. Follow-ups ride the next vehicle. Local gates run first, including checks defined in CI workflow files that local tooling does not run by default. A branch goes to CI only when it is ready to pass. *E.*
-- **No idle workers.** When in-scope work exists, the orchestrator assigns it without asking; it asks only about out-of-scope work. *E.*
+- **Idle capacity only for fitting, independent work.** An idle worker receives work only when that work is independent of what is in flight and fits the worker's tier. The orchestrator assigns such work without asking; it asks only about out-of-scope work. Otherwise idle is the right state: adding a worker to coupled work costs more than it returns. *E, C.*
 - **Model–task match.** Use the strongest model where correctness is decided: plans, reviews, adjudication, oracles. Use cheaper models for mechanical work behind deterministic guards. Never trade a missed finding for a token saving. *E, C.*
 - **Route by complexity, then availability.** Where the worker pool mixes tiers, the orchestrator assigns each slice by its complexity-and-risk class first. Availability only breaks ties.
   - The strongest tier takes slices that change a plan, touch security or state, cut across the codebase, or change a contract between threads.
   - Cheaper tiers take mechanical slices behind deterministic guards.
-  - A slice that stops or fails its review twice is escalated a tier, not retried on the same one.
+  - A slice that stops or fails its review twice is escalated a tier, not retried on the same one. The orchestrator chooses how. It forks the session when the slice has made progress the stronger tier needs. It starts fresh, with the hand-over note, the assumptions and the failure notes, when the context itself is the problem: a wrong path, or a context polluted by it. It records which, and why.
   - A tier's output is never reviewed by the same tier.
   - The ledger records the tier per slice, so escaped defects and cost per tier can show whether the routing is right.
 
@@ -422,6 +425,8 @@ All techniques in this section apply at every profile.
 | Review miss | A review stage should have caught it |
 | Estimate | A cost or time assumption was wrong |
 
+Optionally, a record also carries the category of a published multi-agent failure taxonomy (system design, inter-agent misalignment, task verification), which makes incidents comparable with published failure data ([related-work.md](related-work.md)).
+
 A first breach produces a rule in a brief or checklist. A rule that breaks twice becomes a mechanism: a hook, a deny rule, a gate, or a ritual that runs the step every time. It is tested like code, including a test that it rejects what it should. The second refusal of the same delegated action class is a Permission-model incident: the orchestrator drafts the settings change and the owner applies it once.
 
 **The loop runs in flight.** At each vehicle or checkpoint, the orchestrator reads the incidents logged since the last one. Any class seen twice becomes a slice in the plan. Sustain mode runs the same check at each finalisation.
@@ -434,8 +439,8 @@ A first breach produces a rule in a brief or checklist. A rule that breaks twice
 
 | Layer | Lite | Standard | High |
 |---|---|---|---|
-| L1 Infrastructure | Dedicated development machine, or one isolated environment (container/VM) on a local machine shared by the sessions; no host or production credentials mounted or forwarded; destructive tests only against stubbed copies or throwaway stores | + container or VM per session, egress allow-list, throwaway data stores per session, lab separate from production, per-session least-scope credentials | + VM per session, segmented network, ephemeral environments |
-| L2 Session | Worktree per session; where more than one session runs services: resource registry, unique project names and ports | + clone per environment, internal git remote as the only shared repository surface, own runtime, own identity | + per-ref push enforcement, separate OS identity and credentials |
+| L1 Infrastructure | Dedicated development machine, or one isolated environment (container/VM) on a local machine shared by the sessions; no host or production credentials mounted or forwarded; destructive tests only against stubbed copies or throwaway stores | + containers or VMs split by authority and input trust (orchestrator; workers of equal authority; each session ingesting untrusted content or running destructive work), egress allow-list, throwaway data stores per session, lab separate from production, per-environment least-scope credentials | + VM per session, per-session credentials, segmented network, ephemeral environments |
+| L2 Session | Worktree per session; where more than one session runs services: resource registry, unique project names and ports | + clone per environment (worktrees inside a shared worker environment), internal git remote as the only shared repository surface, own runtime, own identity | + per-ref push enforcement, separate OS identity and credentials |
 | L3 Tools | Deny push/publish/secret reads; enforcement material read-only to the session; enforcing checks fail closed; agent tooling from an owner-approved list | + hooks for environment rules, wrapped commands, pinned agent tooling with auto-update off | + allow-list only, action classifier on side-effecting calls |
 | L4 Permissions | Owner performs all outward actions, from a checkout agents cannot write | + role permission sets, delegation manifest, planned delegations in tool configuration, grants as the owner's answer to the tool's permission prompt in the receiving session | + owner-signed, instance-bound, time-bound grants verified by the receiver; two-party rule for releases: owner + human reviewer, or owner + independent verifier for a sole owner (the verifier rebuilds its own evidence; its signed verdict is required, and releasing without it downgrades that release to Standard) |
 | L5 Repository | No main commits; PRs; owner-only merge and tag; required CI (minimum set) enforced by the host and kept out of band; boundary scans where a public mirror exists | + fresh orchestrator-owned integration branch per vehicle, full CI suite, protected-path review | + signed commits and tags, reproducible builds |
@@ -456,7 +461,7 @@ A control required at Lite also applies at Standard and High; a control required
 As starting points:
 
 - **Lite** fits a single owner on a dedicated machine with no customer data and no production access from development.
-- **Standard** fits teams that ship to users, run parallel workers, or share lab environments. Per-session containers or VMs on a machine the owner attends are Standard; they bring a clone per environment, the internal git remote and an authenticated cross-environment channel.
+- **Standard** fits teams that ship to users, run parallel workers, or share lab environments. Separate containers or VMs on a machine the owner attends are Standard; they bring a clone per environment, the internal git remote and an authenticated cross-environment channel.
 - **High** applies per layer through the triggers above. The decision classifier stays required wherever L6 is High.
 
 **Raise a single layer when:**

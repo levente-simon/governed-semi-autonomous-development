@@ -4,6 +4,42 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.7 -- 2026-10-21
+
+Changed
+
+- **Choosing a pattern by coupling, not size.** Sequential or tightly coupled work stays with one
+  agent (P1, P2); multi-agent patterns are for work that splits into parts independent in
+  substance. Tool load counts as a coordination cost.
+- **Patterns compose.** A plan may assign a pattern per segment, for example P2 for a serial core
+  and P4 for the branches that split from it.
+- **P4's integration condition is explicit:** workers write only on their own branches within
+  their ownership; the orchestrator alone integrates.
+- **"No idle workers" is replaced** by "idle capacity only for fitting, independent work". With
+  worker tiers, assignment follows fit, not idleness; an idle worker is the right state when the
+  remaining work is coupled.
+- **Tier escalation states its criterion:** fork the session when the slice made progress the
+  stronger tier needs; start fresh with the hand-over, assumptions and failure notes when the
+  context itself is the problem.
+
+Added
+
+- **Assumptions and decisions taken** in slice plans and hand-over notes; the orchestrator passes
+  on those that touch other slices.
+- **Context sharing by profile** (control reference, L6): at Lite, where sessions share one trust
+  domain, fuller context may be shared; at Standard and High, references only.
+- Optional tagging of incidents with a published multi-agent failure taxonomy (learning loop).
+- `related-work.md`: a section on when multiple agents help (Anthropic 2024 and 2025, Cognition
+  2025 and 2026, Kim et al., Cemri et al.).
+
+- **Breaking: session isolation at Standard follows authority and input trust, not session count.**
+  Standard no longer requires an environment per session. It requires the orchestrator in its own
+  environment, allows workers of equal authority to share one (a worktree each), and gives its own
+  environment to every session that ingests untrusted content or runs destructive work. Credentials
+  are per environment at Standard and per session at High. A new subsection in the control
+  reference (L1) states why sessions are separated, what that does not buy, and that separate
+  credentials per environment also spread usage and cost within the provider's terms.
+
 ## v0.6 -- 2026-10-21
 
 Added

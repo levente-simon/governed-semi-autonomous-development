@@ -19,20 +19,41 @@ Each layer ends with the artefact that proves the control is in place. The layer
 
 | Control | Prevents | Serves | Cost | Profile |
 |---|---|---|---|---|
-| Isolated environment | A command that deletes, fills or rewrites more than intended, hitting the owner's workstation | S | Setup; slower first start | Lite: one shared. Standard: per session. High: VM per session |
+| Isolated environment | A command that deletes, fills or rewrites more than intended, hitting the owner's workstation | S | Setup; slower first start | Lite: one shared. Standard: split by authority and input trust (below). High: VM per session |
 | No host or production credentials mounted or forwarded (SSH agent, git credential helpers, cloud CLI sessions) | Agents, or content they read, reaching production or personal accounts | S | Owner performs credentialed steps | Lite |
 | Destructive and adversarial tests only against stubbed copies or throwaway stores | One test taking down the environment that every session shares | S, C | Stubs and seed scripts | Lite |
 | Egress allow-list | Exfiltration; fetching unreviewed code | S | List upkeep; blocked legitimate fetches | Standard |
 | Throwaway data stores per session | Destructive tests corrupting long-lived data | S, C | Seed and teardown scripts | Standard |
 | Lab separate from production | A test deployment mistaken for, or wired into, production | S | Extra environments | Standard |
-| Per-session, least-scope credentials | A leaked credential with wide reach or no revocation path | S | Issuing and revoking per session | Standard |
+| Per-environment, least-scope credentials | A leaked credential with wide reach or no revocation path | S | Issuing and revoking per environment | Standard. High: per session |
 | Segmented network; ephemeral environments | Lateral movement; drift in long-lived environments | S | Provisioning automation | High |
 
 Agents run commands faster than anyone can review them line by line. A guard test aimed at the filesystem root, or a cleanup aimed at the wrong target, is an ordinary mistake. Isolation turns it into a lost environment, not a lost workstation. Guards are tested against stubbed copies of the commands they guard. Every change to a lab environment made outside the normal deploy path is preceded by a backup and logged with its exact revert command.
 
+### Why sessions are separated, and how far
+
+Separating sessions is privilege separation. Sessions differ in authority, and in how far their input can be trusted. Without an environment boundary those differences are declared, not enforced.
+
+- **Permission sets need a boundary behind them.** The orchestrator holds integration branches and carries grants; a worker holds one branch. Under one OS user on one filesystem, a worker can rewrite the orchestrator's settings, hooks or ledger, and a shared `.git` runs the same hooks in every session.
+- **Untrusted input meets the least authority.** Sessions that fetch pages or read dependencies, logs and issues carry the injection surface. A misled session acts with whatever its environment reaches.
+- **Accidents cross shared boundaries too.** A reused stack name, a filled disk, a shared stash or concurrent operations on one object store affect every session that shares them.
+- **Credential scope and attribution** depend on sessions not reading each other's credentials and identities.
+
+What separation does not buy: it does not protect the product, because a misled session's output still reaches main through integration, where reviews and CI stop it. It does not help against the model itself. It costs setup, disk, start time, an internal remote and a cross-environment channel.
+
+The boundary therefore follows the two properties that justify it, not the number of sessions. At Standard:
+
+- **The orchestrator runs in its own environment.** The owner's checkout stays outside every agent environment (L4).
+- **Workers of equal authority may share one environment**, with a worktree each and the Lite rules inside it.
+- **A session that ingests untrusted content or runs destructive work gets its own environment**: fetch tools, research capabilities, dependency or issue triage, adversarial tests.
+
+At High, every session gets its own VM.
+
+**Usage and cost.** Each environment authenticates to the model provider with its own least-scope credential. This also spreads usage across separate limits and attributes cost per role or tier, but only within the provider's terms: organisation seats or API keys per environment, never several personal subscriptions held to get around limits.
+
 ### Credential scope
 
-Some credentials cannot be denied, because the session needs them: the model API key, push credentials for the internal remote, lab credentials and broker credentials. At Standard, each is per session and least-scope:
+Some credentials cannot be denied, because the session needs them: the model API key, push credentials for the internal remote, lab credentials and broker credentials. At Standard, each is per environment and least-scope; at High, per session:
 
 - a model key with a spend cap;
 - push credentials limited to the internal remote;
@@ -46,7 +67,7 @@ All are revoked at teardown. Each one is treated as readable by anything the ses
 
 | Control | Prevents | Serves | Cost | Profile |
 |---|---|---|---|---|
-| One session per worktree or clone, one branch per session | Two agents in one checkout; edits on the wrong branch | S, C | Disk; one install per environment | Lite: worktree. Standard: clone per environment |
+| One session per worktree or clone, one branch per session | Two agents in one checkout; edits on the wrong branch | S, C | Disk; one install per environment | Lite: worktree. Standard: clone per environment; worktrees inside a shared worker environment |
 | Unique project names and ports per session; shared-resource registry | One session's stack replacing another's through a reused project name, port or container; silent collisions on lab slots and branch names | C, E | One committed file kept current | Lite, where more than one session runs services |
 | Own runtime | Shared processes and caches between sessions | C | One runtime per environment | Standard |
 | Own identity | Unattributable actions; borrowed credentials | S | Identity provisioning | Standard. High: separate OS identity and credentials |
@@ -319,6 +340,15 @@ A security pass reviews each such change. Its brief is a fixed ritual that the o
 
 A slice plan, finding or decision request lives in a committed file, and the message only says where. This leaves a reviewable record and limits what a forged message can carry.
 
+### Context sharing by profile
+
+How much context sessions share is a trade-off. Fuller shared context, such as a forked session or another worker's full trace, lets agents see each other's implicit decisions, which serves correctness and saves re-discovery. References only keep each session's context small and limit what an injected or forged payload can reach, which serves security.
+
+- **Lite.** All sessions share one trust domain, so references alone buy little security. Fuller context may be shared. The cost to record: content injected into one session's context reaches every session that receives it.
+- **Standard and High.** References only. What one session must know about another's decisions travels in the assumptions and decisions recorded in slice plans and hand-over notes.
+
+At every profile, slice plans and hand-over notes record the assumptions and decisions taken, and the orchestrator passes on those that touch other slices.
+
 ### The message bus
 
 Once sessions run in separate environments, local session messaging no longer reaches across them.
@@ -447,8 +477,8 @@ This map lists every control in this reference at the lowest profile that requir
 
 | Layer | Lite | Standard | High |
 |---|---|---|---|
-| L1 | One shared isolated environment; no host or production credentials mounted or forwarded; destructive and adversarial tests only against stubs or throwaway stores | Isolated environment per session; egress allow-list; throwaway data stores per session; lab separate from production; per-session least-scope credentials | VM per session; segmented network; ephemeral environments |
-| L2 | Worktree per session; unique project names and ports plus resource registry where more than one session runs services; no standing approvals | Clone per environment; internal git remote as the only shared surface; own runtime; own identity | Per-ref push enforcement; separate OS identity and credentials |
+| L1 | One shared isolated environment; no host or production credentials mounted or forwarded; destructive and adversarial tests only against stubs or throwaway stores | Isolated environments split by authority and input trust (orchestrator; workers of equal authority; each session ingesting untrusted content or running destructive work); egress allow-list; throwaway data stores per session; lab separate from production; per-environment least-scope credentials | VM per session; per-session credentials; segmented network; ephemeral environments |
+| L2 | Worktree per session; unique project names and ports plus resource registry where more than one session runs services; no standing approvals | Clone per environment, with worktrees inside a shared worker environment; internal git remote as the only shared surface; own runtime; own identity | Per-ref push enforcement; separate OS identity and credentials |
 | L3 | Deny push, publish and secret reads; enforcement material read-only to the session; enforcing checks fail closed; agent tooling from an owner-approved list | Hooks for environment rules; wrapped commands; pinned agent tooling with auto-update off and changes through protected-path review | Allow-list only; action classifier on side-effecting calls |
 | L4 | Owner performs all outward actions from a checkout agents cannot write | Role permission sets; delegation manifest; planned delegations in tool configuration, exercised at kickoff; grants as the owner's answer to the tool's permission prompt | Owner-signed, instance-bound, time-bound grants with closed scopes, on-device signing and owner-only revocation; two-party release rule with the independent verifier for a sole owner |
 | L5 | No commits on main; PRs; owner-only merge and tag; required CI (minimum set) enforced by the host and kept out of band; boundary scans (including the ledger ref) where a public mirror exists | Fresh orchestrator-owned integration branch per vehicle; full CI suite; protected-path review | Signed commits and tags; reproducible builds |

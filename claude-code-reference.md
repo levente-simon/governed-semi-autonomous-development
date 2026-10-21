@@ -14,7 +14,7 @@ This document maps the method to Claude Code. Features named here appear in the 
 |---|---|
 | Owner | The human operator: applies settings, performs outward actions from a checkout agents cannot write, answers decision messages and permission prompts |
 | Orchestrator | A named session (`claude -n <name>`) in its own worktree or clone |
-| Worker | A session per worktree (`claude --worktree <name>`) at Lite; its own clone in its own container or VM at Standard and High. Its tier is set at launch with `--model` and `--effort`, or changed with `/model` and `/effort`; the saved default effort is the `effortLevel` setting. Record the launch command, tier included, in the ledger |
+| Worker | A session per worktree (`claude --worktree <name>`) at Lite; at Standard, a worktree inside the shared worker container or VM, or its own container or VM when it ingests untrusted content or runs destructive work; at High, its own VM. Its tier is set at launch with `--model` and `--effort`, or changed with `/model` and `/effort`; the saved default effort is the `effortLevel` setting. Record the launch command, tier included, in the ledger |
 | Specialist | Custom subagents in `.claude/agents/`. Each starts with a fresh context window, except a fork subagent, which inherits the conversation. Frontmatter sets `tools`, `disallowedTools`, `model`, `effort`, `permissionMode` and `isolation: worktree`. `permissionMode` is ignored when the parent session runs in `bypassPermissions`, `acceptEdits` or `auto` mode. Plugin agents ignore `permissionMode`, `hooks` and `mcpServers`, so specialists that need those live in `.claude/agents/` |
 | Capability | Dynamic workflows saved in `.claude/workflows/`: rerunnable scripts that orchestrate many subagents. Skills (`SKILL.md`) hold human-run procedures |
 | Peer | Another session with its own ledger and owner-applied settings |
@@ -121,6 +121,8 @@ A ritual that fans out to many reviewers can call a saved dynamic workflow for t
 | P3 Scripted fan-out | Dynamic workflows (saved scripts in `.claude/workflows/`) |
 | P4–P6 Teams | Named sessions per role (`claude -n <name>`): orchestrator, function leads and workers, each in its own worktree or environment |
 
+Tier escalation by fork resumes the failing slice's session as a new session on the stronger tier: `claude --resume <id> --fork-session --model <model> --effort <level>` (the combination of these flags is to verify). A fresh start is a new session on the stronger tier, given the hand-over note, the assumptions and the failure notes.
+
 ### Sessions and recovery
 
 | Need | Mechanism |
@@ -158,8 +160,8 @@ Each template lists its purpose and required fields. The artefacts themselves ar
 | **Ledger: log** | Append-only history | Segment header with carry-forward summary; timestamp (system clock); actor; event type; artefact or commit reference; outcome |
 | **Decision message** | One decision for the owner | Decision ID; TL;DR; context reference; lettered options; recommendation with reasons; safe default and its window (within baseline only); signing rendering, for grants |
 | **Delegation manifest** | Who may do what | Kickoff list of grantable action classes; per grant: unique grant ID, grantor, receiving session instance, action class, target, expiry, baseline or grant, signature (High); revocations (signed, referencing grant ID, on the owner-only ref) |
-| **Slice plan** | The worker's plan before work | Slice ID; goal; criteria referenced; files and resources touched; hot-file changes requested; approach; tests (red-first for fixes); risks; environment needs; deviations |
-| **Hand-over note** | The worker's account after work | Slice ID; commits; changes; tests run with excerpted, secret-scanned output; criteria met; open items; leftovers removed |
+| **Slice plan** | The worker's plan before work | Slice ID; goal; criteria referenced; files and resources touched; hot-file changes requested; approach; assumptions; tests (red-first for fixes); risks; environment needs; deviations |
+| **Hand-over note** | The worker's account after work | Slice ID; commits; changes; assumptions and decisions taken, marked where they touch other slices; tests run with excerpted, secret-scanned output; criteria met; open items; leftovers removed; for an escalation, the failure notes |
 | **Release run sheet** | Ordered steps of one vehicle | Vehicle ID; contents; kit revision; phases with gates and gate owners; rollback anchors; evidence per phase; freeze scope and window; pre-release check results; verifier verdict (High, sole owner: signed verdict over the release digest, or the decision reference for a recorded downgrade to Standard) |
 | **Override entry** | Records a forced or pinned dependency version | Package; forced version; reason; advisory references; owner decision reference; review date; removal condition |
 | **Dismissal entry** | Records an advisory judged not applicable | Advisory ID; affected package and version; verdict; reason with evidence; decided by; re-check date; status (active or reopened) |
