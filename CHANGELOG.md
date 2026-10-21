@@ -4,6 +4,31 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.6 -- 2026-10-21
+
+Added
+
+- **Worker tiers.** Workers can differ in configuration (model and effort level). The plan tags
+  each slice with a complexity-and-risk class, and the orchestrator routes by that class first and
+  by availability second. A slice that stops or fails review twice goes up a tier; a tier's output
+  is never reviewed by the same tier; a tier never changes permissions. New metric: escaped
+  defects and cost per tier.
+- **Action classifier (High, L3).** A calibrated decision model checks the side-effecting tool
+  calls the rules allowed, for misuse of a permitted tool. Its context comes only from trusted
+  sources (slice plan, delegation manifest, provenance), never from the agent's own
+  justification. Scope stays deterministic. It shares one engine with the L6 decision classifier.
+- **Thresholds from a target error rate.** Classifier thresholds are set from an error rate the
+  owner tolerates on items decided alone, and the calibration record states the coverage at that
+  target. New metric: classifier coverage. Two decider tiers: a fast encoder for high-volume
+  points, a calibrated reasoning model for the gateway and quarantine triage.
+- `related-work.md`: a section on calibrated decision models, with two 2026 preprints.
+
+Fixed
+
+- `claude-code-reference.md`: removed a stray review-finding label.
+
+No control moved between profiles.
+
 ## v0.5 -- 2026-10-21
 
 Changed

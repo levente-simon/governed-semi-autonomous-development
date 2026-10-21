@@ -50,17 +50,18 @@ The method is tool-agnostic. Only claude-code-reference.md names a tool.
 |---|---|---|---|
 | **Owner** | Sets intent, decides, approves outward actions | Main branch, releases, production, grants, scope | Reads every artefact (receives decisions, not files) |
 | **Orchestrator** | Plans, assigns, reviews, integrates, keeps state, filters decisions | Integration branches, slice approvals, rulings within delegated scope | Acts outside its delegation; relays authority |
-| **Worker** | Plans and executes slices in its own isolated environment | Its own branch and environment | Pushes outward (public host, registries), publishes, asks the owner directly |
+| **Worker** | Plans and executes slices in its own isolated environment, with a declared configuration (model and effort level) | Its own branch and environment | Pushes outward (public host, registries), publishes, asks the owner directly |
 | **Specialist** | Reviews through one lens, or performs one competence | Nothing (read-only or output-only) | Acts on infrastructure |
 | **Capability** | A pre-built, versioned production line (research, generation, verification) | — | Runs without its contract's gates |
 | **Peer** | Another orchestrator, a domain owner, or a function agent (strategy, marketing) | Its own domain | Accepts or grants authority across the boundary |
 
-Four points need more than the table:
+Five points need more than the table:
 
 - **The owner receives decisions, not files.** If the owner must read a full diff to decide, the decision was not prepared. The one exception is changes to protected paths, which reach the owner as the diff ([control-reference.md](control-reference.md), L5).
 - **The orchestrator never relays authority.** "The owner said you may", sent by the orchestrator, is not a grant. What counts as relaying is defined in the delegation model ([control-reference.md](control-reference.md), L4).
 - **Workers route every question through the orchestrator.** This keeps the owner's queue filtered. It also keeps one record of every ruling.
 - **Workers push only inward.** Where an internal git remote exists, a worker pushes its own branch there. It never pushes to the public host or a registry.
+- **Workers can differ in configuration.** A pool may mix tiers: stronger and slower configurations next to cheaper and faster ones. The tier decides which slices a worker receives (§10). It never changes the worker's permissions: authority comes from the role, not from the model.
 
 ```mermaid
 graph TD
@@ -118,7 +119,8 @@ The **orchestrator ledger** is the initiative's recovery point and its history. 
 **The current-state board** lists:
 
 - **waiting on owner**: one line per item (decision, grant or chore), with *since* (system clock) and *blocks* (the slices or workers it holds up);
-- slices and their owners;
+- slices with their owner, their complexity-and-risk class and the tier that runs them;
+- workers with their declared configuration;
 - checkpoint status;
 - active grants, with ID, receiving session instance, scope and expiry;
 - a link to the kickoff record of each session's effective permissions;
@@ -192,7 +194,7 @@ Shape and Plan run as a chain of documents. Each has a review gate and a decisio
 
 **Shape.** The owner states intent. The team writes the functional specification and opens the decision register. *Exit: a functional specification that the plan can trace acceptance criteria to.*
 
-**Plan.** The orchestrator produces the technical specification with its gap analysis, then the implementation plan. The plan splits the work into lanes (parallel streams), slices (units one worker completes and hands over), dependencies, and checkpoints (points where integrated work is reviewed as a whole). It names the execution pattern.
+**Plan.** The orchestrator produces the technical specification with its gap analysis, then the implementation plan. The plan splits the work into lanes (parallel streams), slices (units one worker completes and hands over), dependencies, and checkpoints (points where integrated work is reviewed as a whole). It names the execution pattern, and it tags each slice with a complexity-and-risk class, which decides the worker tier that runs it (§10).
 
 It includes an **ownership partition**: who owns which files, services and resources, so that no two agents edit the same thing. Shared hot files belong to the orchestrator: lockfiles, workspace manifests, version files, changelogs and generated indexes. Workers state the change they need in the hand-over, and the orchestrator applies and regenerates it at integration. Specialists review the plan before any code exists. *Exit: a reviewed plan and an owner "go".*
 
@@ -281,7 +283,7 @@ Eight layers, from the outside in. This section gives what each layer achieves a
 |---|---|---|---|---|
 | L1 | **Infrastructure isolation** | Contain blast radius of any session | Sandbox/container/VM per session; egress allow-list; no production credentials; throwaway data stores; lab environments separate from production | S |
 | L2 | **Session isolation** | No interference between sessions | One session per clone and branch; own ports and runtime; own identity; shared-resource registry; an internal git remote as the only shared repository surface | S, C |
-| L3 | **Tool control** | Agents can only do what their role needs | Allow/deny lists; wrapped commands; pre-execution hooks enforcing environment rules | S, C |
+| L3 | **Tool control** | Agents can only do what their role needs | Allow/deny lists; wrapped commands; pre-execution hooks enforcing environment rules; an action classifier on side-effecting calls (High) | S, C |
 | L4 | **Permission sets and delegation** | Authority is explicit, scoped and auditable | Role permission sets; delegation manifest (who granted what to whom, scope, expiry); grants given in the receiving session only | S |
 | L5 | **Repository controls** | Nothing reaches main unreviewed | Worktrees; no commits on main; integration branches owned by the orchestrator; owner-only merge and tag; required CI; boundary scans for public mirrors | S, C |
 | L6 | **Message controls** | Inter-agent communication cannot carry injected instructions or borrowed authority | A private message bus; content passed as repository references, messages as notifications; filtering and provenance on untrusted content; authority never carried by a message | S |
@@ -292,7 +294,7 @@ Eight layers, from the outside in. This section gives what each layer achieves a
 
 **L2 Session isolation.** Parallel sessions cannot touch each other's files, processes, ports or identity. The key rule: environments never share a writable checkout or `.git` directory. Across environments, an internal git remote is the only shared surface.
 
-**L3 Tool control.** Each role can use only the tools its work needs. The key rules: a session cannot write what enforces its limits, every enforcing check fails closed, and rule text is a guard-rail against mistakes, not a boundary against an adversary.
+**L3 Tool control.** Each role can use only the tools its work needs. The key rules: a session cannot write what enforces its limits, every enforcing check fails closed, and rule text is a guard-rail against mistakes, not a boundary against an adversary. At High, a calibrated action classifier also checks the side-effecting calls the rules allowed, for misuse of a permitted tool.
 
 **L4 Permission sets and delegation.** Authority is explicit, scoped, time-bound and auditable. Enforcement reads configuration, not conversation, so every planned delegation is translated into the tool's configuration at kickoff. Authority comes in two levels. The **baseline** is set at kickoff in each environment: the pinned orchestrator, what it may assign, and the session's limits. Across environments it is a signed kickoff manifest, anchored on the owner's public key, which is provisioned into the environment image and never arrives over the bus. A **grant** widens authority beyond the baseline for a named scope, receiver and expiry; the receiver accepts it only because it verifies. **Invariant: a message can instruct within delegated scope; only the owner's signature can widen it.** A compromised orchestrator or bus can misdirect work inside the baseline, which controls it does not run will catch, but it cannot escalate beyond it.
 
@@ -394,6 +396,14 @@ All techniques in this section apply at every profile.
 - **PR and CI economy.** One vehicle per checkpoint or release. Follow-ups ride the next vehicle. Local gates run first, including checks defined in CI workflow files that local tooling does not run by default. A branch goes to CI only when it is ready to pass. *E.*
 - **No idle workers.** When in-scope work exists, the orchestrator assigns it without asking; it asks only about out-of-scope work. *E.*
 - **Model–task match.** Use the strongest model where correctness is decided: plans, reviews, adjudication, oracles. Use cheaper models for mechanical work behind deterministic guards. Never trade a missed finding for a token saving. *E, C.*
+- **Route by complexity, then availability.** Where the worker pool mixes tiers, the orchestrator assigns each slice by its complexity-and-risk class first. Availability only breaks ties.
+  - The strongest tier takes slices that change a plan, touch security or state, cut across the codebase, or change a contract between threads.
+  - Cheaper tiers take mechanical slices behind deterministic guards.
+  - A slice that stops or fails its review twice is escalated a tier, not retried on the same one.
+  - A tier's output is never reviewed by the same tier.
+  - The ledger records the tier per slice, so escaped defects and cost per tier can show whether the routing is right.
+
+  *E, C.*
 - **Review depth and lens count scaled to risk.** *E.*
 - **Codify repeated workflows.** A workflow repeated more than a few times becomes a ritual, identical every time and cheaper to run. *E, C.*
 - **Continuity across pauses.** Planned compaction, the pause protocol and the owner-chore budget (§4) keep work moving without extra owner time. *E.*
@@ -426,7 +436,7 @@ A first breach produces a rule in a brief or checklist. A rule that breaks twice
 |---|---|---|---|
 | L1 Infrastructure | Dedicated development machine, or one isolated environment (container/VM) on a local machine shared by the sessions; no host or production credentials mounted or forwarded; destructive tests only against stubbed copies or throwaway stores | + container or VM per session, egress allow-list, throwaway data stores per session, lab separate from production, per-session least-scope credentials | + VM per session, segmented network, ephemeral environments |
 | L2 Session | Worktree per session; where more than one session runs services: resource registry, unique project names and ports | + clone per environment, internal git remote as the only shared repository surface, own runtime, own identity | + per-ref push enforcement, separate OS identity and credentials |
-| L3 Tools | Deny push/publish/secret reads; enforcement material read-only to the session; enforcing checks fail closed; agent tooling from an owner-approved list | + hooks for environment rules, wrapped commands, pinned agent tooling with auto-update off | + allow-list only |
+| L3 Tools | Deny push/publish/secret reads; enforcement material read-only to the session; enforcing checks fail closed; agent tooling from an owner-approved list | + hooks for environment rules, wrapped commands, pinned agent tooling with auto-update off | + allow-list only, action classifier on side-effecting calls |
 | L4 Permissions | Owner performs all outward actions, from a checkout agents cannot write | + role permission sets, delegation manifest, planned delegations in tool configuration, grants as the owner's answer to the tool's permission prompt in the receiving session | + owner-signed, instance-bound, time-bound grants verified by the receiver; two-party rule for releases: owner + human reviewer, or owner + independent verifier for a sole owner (the verifier rebuilds its own evidence; its signed verdict is required, and releasing without it downgrades that release to Standard) |
 | L5 Repository | No main commits; PRs; owner-only merge and tag; required CI (minimum set) enforced by the host and kept out of band; boundary scans where a public mirror exists | + fresh orchestrator-owned integration branch per vehicle, full CI suite, protected-path review | + signed commits and tags, reproducible builds |
 | L6 Messages | Local session messaging; authority never relayed | + authenticated messaging (an authenticated cross-environment channel where sessions run in separate environments), content as repository references, message audit written by the transport | + private bus (mTLS, per-session credentials, role ACLs, broker-stamped identity), filtering and provenance on all untrusted content; a self-hosted decision classifier as an extra filter at the gateway and content ingestion |
@@ -483,12 +493,15 @@ Every metric has a source in the ledger. None is a target in itself, because a m
 | Idle-worker time | Assignment and planning quality |
 | Estimate accuracy per unit | Calibration (§10) |
 | CI runs per vehicle | Whether local gates match CI |
+| Escaped defects and cost per worker tier | Whether slices are routed to the right tier (§10) |
+| Classifier coverage at the target error rate | Review load from the decision classifiers, and what a stricter target costs ([control-reference.md](control-reference.md), L6) |
 | Rule breaches and their mechanisation | Health of the learning loop (§11) |
 
 Read them together:
 
 - More findings at plan review and fewer escaped defects means the cheap stages work.
 - Many CI runs per vehicle means local gates miss what CI checks.
+- Escaped defects concentrated in one tier means its routing threshold is too generous.
 - Many interrupts with few real decisions means the decision filter is loose.
 - Few interrupts with high owner-wait time means the owner queue is badly ordered or under-batched.
 - A repeated breach that never became a mechanism means the learning loop has stalled.
@@ -499,12 +512,14 @@ Read them together:
 
 | Term | Definition |
 |---|---|
+| **Action classifier** | At High, a calibrated decision model that checks side-effecting tool calls the rules allowed, for misuse of a permitted tool. Its context comes only from trusted sources, never from the agent's own justification |
 | **Baseline delegation** | Authority set at kickoff in each environment: pinned orchestrator, what it may assign, the session's limits. Owner-signed (High) or owner-applied (Standard) |
 | **Blind judge** | A specialist that evaluates one candidate without seeing alternatives |
 | **Board / log** | The two parts of the ledger: current state (rewritten) and history (append-only, rotated per vehicle or checkpoint) |
 | **Capability** | A pre-built, versioned production line with a contract |
 | **Checkpoint** | A point where integrated work is reviewed as a whole; every vehicle closes one |
 | **Decision classifier** | A self-hosted, locally calibrated model that sorts messages at the gateway and external content at ingestion into pass, quarantine or block. An extra filter after the deterministic checks; never the boundary, never a source of authority |
+| **Coverage** | The share of items a decision classifier decides on its own at the target error rate. The rest goes to review |
 | **Delegation manifest** | The record of who granted what to whom, with scope and expiry |
 | **Documentation chain** | The sequence of functional specification, technical specification with gap analysis, implementation plan, slice execution and close-out, each with a review gate and a decision step |
 | **Documentation fold** | Folding working documents into durable architecture, user and agent-instruction documents at each checkpoint and vehicle |
@@ -527,3 +542,4 @@ Read them together:
 | **Slice ledger** | A worker's record of slice state and grant use, on its own branch, aggregated by the orchestrator |
 | **Sustain mode** | The steady-state maintenance loop for a released product; outlives initiatives |
 | **Trust anchor** | The owner's public key, provisioned into each environment image at creation |
+| **Worker tier** | A worker's declared configuration (model and effort level). The orchestrator routes slices to tiers by complexity and risk. A tier never changes permissions |

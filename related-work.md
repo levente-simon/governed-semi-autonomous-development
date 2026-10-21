@@ -1,6 +1,6 @@
 # Related work
 
-*How this method relates to published work, and where it differs. Current as of 20 October 2026.
+*How this method relates to published work, and where it differs. Current as of 21 October 2026.
 Corrections and additions are welcome as issues.*
 
 This document exists to place the method, not to stake a claim. It makes no novelty claim and
@@ -233,6 +233,30 @@ What that body of work lacks is not the techniques but the shape: it exists as s
 rather than as a baseline with profiles, raise-triggers, recorded residual risks and a stated
 proof per control.
 
+## Calibrated decision models
+
+The decision classifier (control reference, L6) and the action classifier (L3) assume a model
+that returns calibrated probabilities over typed questions, so that thresholds can be set from a
+target error rate. Two 2026 preprints describe that class of model.
+
+Guo et al. evaluate a model trained with reinforcement learning for calibrated decisions (RLCD) as
+a zero-shot detector across ten alignment-failure types, prompt injection, deception, reward
+hacking and power seeking among them. They report a median AUROC of 0.886 from one generic
+question, and that context fields matter more than question wording. They do not evaluate tool
+calls or inter-agent messages; applying the model there is this method's extrapolation, not their
+result. Their finding about context is also why the L3 classifier takes its context only from
+trusted sources.
+
+Gao and Wang publish an open RLCD training recipe for small reasoning models ("calibrate, then
+reinforce") and report selective prediction: the share of items decided alone at a bounded error
+rate. That is the form in which this method sets classifier thresholds and records coverage.
+They also show that when uncertainty comes from annotator disagreement, RLCD cannot beat
+cross-entropy, which is why the method decides scope deterministically rather than by model.
+Their evaluation is mathematical answer verification on one 1.7B model, not security.
+
+Neither paper is evidence that the controls built on these models work in this setting. The
+method requires local calibration and recorded error rates for that reason.
+
 ## What this method is
 
 **A synthesis assembled for one setting.** Eight layers, three profiles chosen independently per
@@ -276,5 +300,10 @@ resemblance and does not yet account for where it fails.
 - Telukunta, S., Lilis, G. N., & Baron, L. (2026). *The CASE Framework*. arXiv:2608.10153 [cs.AI].
 - *Organization of Multi-Agent Systems: An Overview*. arXiv:1506.09032, as a survey entry point
   to the organizational-model literature.
+- Guo, R., Liu, Y., Deng, G., Li, Y., Zhao, L., Wu, Y., Chen, S., Zhang, Y., & Zhang, L. Y.
+  (2026). *Just Ask Jev: Reinforcement Learning for Calibrated Decisions as a Zero-Shot Detector
+  of AI Alignment Failures*. arXiv:2609.29429 [cs.AI].
+- Gao, Z., & Wang, P. (2026). *OpenJev-RLCD: A Working RLCD Implementation*. arXiv:2609.38850
+  [cs.AI].
 
 The 2026 arXiv works above are preprints with no stated venue at the time of writing.

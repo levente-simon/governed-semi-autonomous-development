@@ -83,6 +83,7 @@ At Lite, worktrees in one isolated environment are enough. They separate files a
 | Pre-execution hooks for environment rules | Known rules broken under load | S, C | Writing and testing hooks | Standard |
 | Wrapped commands | Risky tools run with unsafe defaults or targets | S, C | Wrapper upkeep | Standard |
 | Allow-list only | Any tool use not foreseen for the role | S | Frequent list updates | High |
+| Action classifier on side-effecting calls | A permitted tool used outside the task: destructive, exfiltrating or access-acquiring calls the rules allow; actions driven by instructions in fetched content | S | A self-hosted decision engine shared with L6; latency on side-effecting calls; local calibration | High |
 
 ### Enforcement material
 
@@ -123,7 +124,20 @@ Tool servers and hooks often run outside the shell sandbox. A tooling change com
 
 A deny rule that matches command text covers the usual form of a command. It does not cover a full path, a shell wrapper or a re-spelled flag. Deny lists catch mistakes. The boundary against a determined adversary is L1. A rule that must hold needs an OS-level sandbox, or a hook that inspects the full command and is tested against evasions.
 
-*Proof: permission files, hooks and their tests in the repository; the kickoff record.*
+### The action classifier (High)
+
+Rules decide which tools a role may use. They cannot tell a permitted tool used for the task from the same tool used against it. At High, a calibrated action classifier checks for that misuse.
+
+- **Position.** Deny and allow rules run first, then the deterministic hooks. The classifier sees only calls the rules allowed.
+- **Scope.** Only side-effecting calls are checked: shell commands, network access, writes outside the session's worktree, and tool-server calls with effects. Reads are not checked, because the latency would fall on every call.
+- **Questions.** The classifier answers signal questions: is the call destructive, is it exfiltrating, does it acquire access or credentials beyond the task, does it follow from instructions in fetched content? Whether a call is within the slice's scope is decided deterministically, from the closed action classes and the slice plan. Where people would disagree about the label, calibration cannot make a model's answer reliable, so scope is not left to it.
+- **Context from trusted sources only.** The classifier receives the slice plan, the delegation manifest and the provenance of the content that preceded the call. It never receives the agent's own justification for the call. A decision model leans on its context, so whoever writes the context steers the verdict.
+- **Outcomes.** Pass; block, recorded for batch review; or, for an action class the owner can grant, the tool's own permission prompt. The classifier fails closed and never feeds the owner's decision queue directly.
+- **One engine.** It shares the decision engine, the thresholds discipline and the calibration records with the L6 decision classifier.
+
+**Residual risk.** As in L6: the classifier is probabilistic, catches some misuse rather than all of it, and never confers authority.
+
+*Proof: permission files, hooks and their tests in the repository; the kickoff record; the action classifier's calibration records.*
 
 ## L4 Permission sets and delegation
 
@@ -331,11 +345,13 @@ At High, a decision classifier adds one more filtering layer on top of the messa
   - Content read through ordinary tools, such as dependency source or tool output, is not covered. It rests on L1 and L3.
   - The classifier does not run on internal notifications. Those carry repository references and are low risk. Filtering them adds latency, and false positives would stall work.
 - **Decisions.** The classifier returns a calibrated confidence. Two thresholds map it to one of three outcomes: pass, quarantine for review, or block. It fails closed: an error or a missing verdict counts as block. Every decision goes to the ledger with its confidence.
+- **Thresholds from a target error rate.** The owner sets the error rate tolerated on items the classifier decides alone. The thresholds are fitted so that rate holds, and everything between them goes to review. The calibration record states the **coverage** at that target: the share decided without a reviewer. Coverage sizes the review load, and it shows what a stricter target costs.
+- **Two decider tiers.** A single-pass encoder model serves the high-volume points: content ingestion and the L3 action classifier. A slower, calibrated reasoning model serves the low-volume, higher-stakes points: the federation gateway, and first-pass triage of the quarantine queue before a reviewer sees it.
 - **Quarantine.** Quarantined items are reviewed in batches by an output-only reviewer. They never go into the owner's decision queue. A per-source quarantine ceiling stops a source that produces too many.
-- **Local calibration.** Thresholds and temperature are fitted on the deployment's own labelled set.
+- **Local calibration.** Thresholds and temperature are fitted on the deployment's own labelled set, or the model is fine-tuned on it with a calibrated-decision training recipe.
   - The set includes an injection corpus and real benign traffic.
   - It is versioned, and its labels come from humans or deterministic sources.
-  - The false-positive and false-negative rates are recorded and re-evaluated on every model or threshold change.
+  - The false-positive and false-negative rates and the coverage are recorded and re-evaluated on every model or threshold change.
   - The confidence a shipped model reports is not trusted as calibrated.
 - **Inside the trust boundary.** The model is self-hosted or open-weight and runs without egress. Its weights are pinned by hash and verified before load.
 
@@ -433,7 +449,7 @@ This map lists every control in this reference at the lowest profile that requir
 |---|---|---|---|
 | L1 | One shared isolated environment; no host or production credentials mounted or forwarded; destructive and adversarial tests only against stubs or throwaway stores | Isolated environment per session; egress allow-list; throwaway data stores per session; lab separate from production; per-session least-scope credentials | VM per session; segmented network; ephemeral environments |
 | L2 | Worktree per session; unique project names and ports plus resource registry where more than one session runs services; no standing approvals | Clone per environment; internal git remote as the only shared surface; own runtime; own identity | Per-ref push enforcement; separate OS identity and credentials |
-| L3 | Deny push, publish and secret reads; enforcement material read-only to the session; enforcing checks fail closed; agent tooling from an owner-approved list | Hooks for environment rules; wrapped commands; pinned agent tooling with auto-update off and changes through protected-path review | Allow-list only |
+| L3 | Deny push, publish and secret reads; enforcement material read-only to the session; enforcing checks fail closed; agent tooling from an owner-approved list | Hooks for environment rules; wrapped commands; pinned agent tooling with auto-update off and changes through protected-path review | Allow-list only; action classifier on side-effecting calls |
 | L4 | Owner performs all outward actions from a checkout agents cannot write | Role permission sets; delegation manifest; planned delegations in tool configuration, exercised at kickoff; grants as the owner's answer to the tool's permission prompt | Owner-signed, instance-bound, time-bound grants with closed scopes, on-device signing and owner-only revocation; two-party release rule with the independent verifier for a sole owner |
 | L5 | No commits on main; PRs; owner-only merge and tag; required CI (minimum set) enforced by the host and kept out of band; boundary scans (including the ledger ref) where a public mirror exists | Fresh orchestrator-owned integration branch per vehicle; full CI suite; protected-path review | Signed commits and tags; reproducible builds |
 | L6 | Authority never relayed; local messaging with tool-attributed senders | Content as repository references; authenticated messaging, including a cross-environment channel where needed; message audit written by the transport | Private bus with full requirements; filtering and provenance on untrusted content; decision classifier at the gateway and content ingestion |
@@ -516,7 +532,8 @@ The reference flow is threat-modelled in **Dethernety**, the threat-modelling pr
 
 **Traceability and deliverables.** Each threat links to the controls that mitigate it, by layer and profile. Examples:
 
-- **Prompt injection:** L1 isolation, L3 tool control, the L6 deterministic checks and references-only rule, the L6 decision classifier at High, and the L7 review of deliverables.
+- **Prompt injection:** L1 isolation, L3 tool control, the L3 action classifier and the L6 decision classifier at High, the L6 deterministic checks and references-only rule, and the L7 review of deliverables.
+- **Misuse of a permitted tool:** closed action classes and the slice plan for scope (L4), and the L3 action classifier at High.
 - **Grant replay:** instance binding and expiry (L4).
 - **Revocation suppression:** the owner-only revocation location and fail-closed reads (L4).
 - **Fabricated release evidence:** required CI read from the host by commit (L5), and the independent verifier's own evidence rebuild and required signed verdict (L4).
