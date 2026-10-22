@@ -4,6 +4,17 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.8.1 -- 2026-10-22
+
+Changed
+
+- `related-work.md` no longer carries correction notices or version history in its body. The
+  corrections it listed are recorded in this changelog: the withdrawn novelty claim under v0.3
+  and v0.4, and the source-check corrections under v0.8. The reclassification of Madatha's
+  control plane is stated in the present tense, and the no-novelty statement keeps its reason.
+
+No change to any principle, role, control, profile or metric.
+
 ## v0.8 -- 2026-10-22
 
 Changed
@@ -242,8 +253,42 @@ Fixed
   read-only workflow default does not bind same-repository PRs; `DISABLE_UPDATES`; the `clear`
   source; Dependabot secrets; the broken "Appendix B" reference; reading CI by commit with
   `gh run list --commit`.
-- `related-work.md`: the corrections listed in its v0.8 correction notice, including errors
-  introduced in v0.6 and v0.7 and leftover phrases that still stated a claim.
+- `related-work.md`, after a source check:
+  - MOISE (2000) is by Hannoun, Boissier, Sichman and Sayettat; the structural, functional and
+    deontic split belongs to MOISE+ (2002). Organizational rules enter Gaia with the 2003
+    revision, not Gaia 2000; the same authors introduced the concept in 2001. The
+    writers-and-editor cardinality example comes from the Moise software distribution, not the
+    2002 paper.
+  - Graicunas did prescribe a span limit: five, and probably four. Two uncited statements about
+    later empirical spans and modern contingency views are removed.
+  - CrewAI's guidance against delegation loops is in its official documentation, and its
+    delegation flag now defaults to off. The earlier text called the first a community view and
+    the second a documentation disagreement.
+  - RFC 8693 does not require narrowing and does not enforce its delegation chain. Attenuation
+    does not make authority non-relayable: the cited credentials are bearer credentials.
+  - The harness-engineering study examines how coding tools are configured, not enforcement
+    before a call. An uncited sentence about a line of related work is removed.
+  - GAIE is the closest prior formulation of risk-tiered oversight for code generation, not its
+    origin. Not all of Madatha's five tiers are allow-lists, and the two figures quoted from its
+    prevalence study are computed differently. CASE's third layer treats the supervision of
+    human-agent teams, not team structure.
+  - Introduced in v0.7: the quotation from Anthropic's guidance was wrong. Kim et al.'s figures
+    come from the first version of their study and its blog; the current version reports 260
+    configurations and six benchmarks. Cemri et al. derived their taxonomy from 150 traces and
+    applied it to more than 1,600.
+  - Introduced in v0.6: Guo et al. do evaluate injected instructions in tool outputs. Their
+    finding about context concerns fields that encode the label, so it no longer stands as
+    support for the trusted-context rule. Their model is calibrated when pooled, not per
+    benchmark. Gao and Wang evaluate two tasks plus a disagreement dataset, and their result is
+    that their objective gains nothing over cross-entropy under annotator disagreement, not that
+    a model's answer is unreliable there.
+  - Three leftover phrases still stated a claim of this method's own after v0.4 withdrew every
+    claim. They are rewritten, and two later gap phrasings are rewritten too.
+  - CrewAI was said to have no human review and no environment isolation, and Madatha's
+    write-path validation and hook coverage were overstated. Several Works-cited entries lacked
+    authors or had truncated titles.
+  - MetaGPT's intermediate documents are requirements, designs and interface specifications;
+    test reports are not among them.
 - "An auditor can hold" now reads "designed so an auditor can hold".
 - The threat-model note names one author and uses the README's capitalisation.
 - The README issues link is absolute.

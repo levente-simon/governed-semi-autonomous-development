@@ -4,54 +4,8 @@
 Terms are defined in [glossary.md](glossary.md). Corrections and additions are welcome as issues.*
 
 This document exists to place the method, not to stake a claim. It makes no novelty claim and
-no priority claim.
-
-**Correction notice (v0.8).** A source check of this document found errors, some of them
-introduced in v0.6 and v0.7. The substantive ones are listed here and corrected in the text below:
-
-- MOISE (2000) is by Hannoun, Boissier, Sichman and Sayettat; the structural, functional and
-  deontic split belongs to MOISE+ (2002). Organizational rules enter Gaia with the 2003
-  revision, not Gaia 2000; the same authors introduced the concept in 2001. The writers-and-editor cardinality example comes from the Moise software
-  distribution, not the 2002 paper.
-- Graicunas did prescribe a span limit: five, and probably four. Two uncited statements about
-  later empirical spans and modern contingency views are removed.
-- CrewAI's guidance against delegation loops is in its official documentation, and its
-  delegation flag now defaults to off. The earlier text called the first a community view and the
-  second a documentation disagreement.
-- RFC 8693 does not require narrowing and does not enforce its delegation chain. Attenuation does
-  not make authority non-relayable: the cited credentials are bearer credentials.
-- The harness-engineering study examines how coding tools are configured, not enforcement before
-  a call. An uncited sentence about a line of related work is removed.
-- GAIE is the closest prior formulation of risk-tiered oversight for code generation, not its
-  origin. Not all of Madatha's five tiers are allow-lists, and the two figures quoted from its
-  prevalence study are computed differently. CASE's third layer treats the supervision of
-  human-agent teams, not team structure.
-- Introduced in v0.7: the quotation from Anthropic's guidance was wrong. Kim et al.'s figures come
-  from the first version of their study and its blog; the current version reports 260
-  configurations and six benchmarks. Cemri et al. derived their taxonomy from 150 traces and
-  applied it to more than 1,600.
-- Introduced in v0.6: Guo et al. do evaluate injected instructions in tool outputs. Their finding
-  about context concerns fields that encode the label, so it no longer stands as support for the
-  trusted-context rule. Their model is calibrated when pooled, not per benchmark. Gao and Wang
-  evaluate two tasks plus a disagreement dataset, and their result is that their objective gains
-  nothing over cross-entropy under annotator disagreement, not that a model's answer is
-  unreliable there.
-- Three leftover phrases still stated a claim of this method's own after v0.4 withdrew every
-  claim. They are rewritten, and two later gap phrasings are rewritten too.
-- CrewAI was said to have no human review and no environment isolation, and Madatha's write-path
-  validation and hook coverage were overstated. Several Works-cited entries lacked authors or had
-  truncated titles.
-- MetaGPT's intermediate documents are requirements, designs and interface specifications; test
-  reports are not among them.
-
-**Correction notice (v0.4).** The v0.2 version of this document claimed four positions in this
-method were unaddressed in published work. That claim is withdrawn. The survey behind it covered
-2026 preprints on coding agents and missed multi-agent organizational models, capability
-security, harness engineering and the orchestration frameworks, all of which address the same
-properties directly. Rather than restate the claim more carefully, it is gone: a reference method
-does not need to be first, and a gap claim is the one thing in a document like this that can be
-wrong at the author's expense. The method is offered as a way to do the work, and the literature
-below is offered so a reader can see what it is built out of.
+no priority claim: a reference method does not need to be first. The method is offered as a way
+to do the work, and the literature below shows what it is built out of.
 
 | Work | Governs | Unit of control | Evidence basis |
 |---|---|---|---|
@@ -64,8 +18,8 @@ below is offered so a reader can see what it is built out of.
 
 ## Multi-agent organizational models
 
-This is the body of work the v0.2 claim should have engaged with. Treating the organization as
-the governance object, specified separately from the agents, is not new and is not a gap.
+Treating the organization as the governance object, specified separately from the agents, is not
+new and is not a gap.
 
 **Gaia** (Wooldridge, Jennings & Kinny, *Autonomous Agents and Multi-Agent Systems* 3, 2000)
 treats a multi-agent system as a computational organization of interacting roles. The revised
@@ -103,8 +57,7 @@ transferable figure.
 
 ## Agent orchestration frameworks
 
-The organizational frame also exists as shipped software, which is the nearest prior art of all
-and was absent from v0.2.
+The organizational frame also exists as shipped software, which is the nearest prior art of all.
 
 **CrewAI** implements a hierarchical process in which a manager agent coordinates the workflow,
 delegates tasks and validates outcomes, with the manager either supplied explicitly or created
@@ -243,12 +196,10 @@ It arrived first at several positions this method holds: enforcement in code rat
 agent compliance, fail-closed permission sets per role, enforcement material protected from the
 session it governs, and mechanisms tested by injecting what they must reject.
 
-**A correction to how v0.2 characterised it.** That version filed this work under enforcement
-and kept the organizational ground for this method. That classification does not hold. The
-paper includes a phase state machine with named delegation receipts, human-in-the-loop gates
-after specific phases, and a capped escalation to a human after three failed auto-fix
-iterations by default. A gated phase machine with delegation records and human escalation
-points is an authority structure, not only an enforcement primitive.
+**More than enforcement.** The paper includes a phase state machine with named delegation
+receipts, human-in-the-loop gates after specific phases, and a capped escalation to a human after
+three failed auto-fix iterations by default. A gated phase machine with delegation records and
+human escalation points is an authority structure, not only an enforcement primitive.
 
 What remains different is scope rather than category: it governs one harness on one machine,
 states that it is not building a sandbox, and addresses no environment isolation, nested
@@ -387,13 +338,13 @@ article calls the first of these a grant. This method calls it the agent's capab
 sense of what it can do, distinct from the capability library and from capability security's
 token of authority, because a grant here is an owner-issued widening of authority.
 
-The article makes four other proposals. v0.8 responds to two. Memory loss as a design input
+The article makes four other proposals. The method responds to two. Memory loss as a design input
 became principle 7: limits are re-read from durable artefacts and re-checked, and the restated
 limits are re-injected at intervals, modelled on the article's own status reports. Encrypted
 transport became an end-to-end encrypted message option at High; the article also proposes
-encrypted state, which v0.8 does not adopt. Its proposal to govern agents inside the product is
-recorded as out of scope (method.md §0). Its offer of measured owner metrics, as a second
-evidence base, is not taken up in v0.8.
+encrypted state, which the method does not adopt. Its proposal to govern agents inside the
+product is recorded as out of scope (method.md §0). Its offer of measured owner metrics, as a second
+evidence base, is not yet taken up.
 
 The reading also found its own CI to be in-band: the agent that pushes can change the checks
 that gate it, in the same push. That is the case the out-of-band CI rule addresses (control
@@ -420,7 +371,7 @@ properties agents lack: an agent holds no reputation across grants, learns nothi
 revoked, and cannot bear a consequence. Responsibility therefore collapses onto the human in
 every case, which is why §1's first principle puts authority there. The disanalogies may matter
 more than the transfers -- no human organization has a class of participant that loses its
-policy memory at unpredictable intervals. Since v0.8, principle 7 designs for that memory loss.
+policy memory at unpredictable intervals. Principle 7 designs for that memory loss.
 This method is built on the organizational resemblance and does not yet account for the other
 places where it fails.
 
