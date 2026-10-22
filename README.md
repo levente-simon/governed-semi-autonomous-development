@@ -4,19 +4,21 @@ A tool-agnostic reference method for governing teams of AI agents that build pro
 
 The method is designed around three properties at once: **secure**, **correct** and **efficient**. Efficiency never overrides the other two. It is not a security guide: it describes how to organise, run and control agent teams, with security as one property among three.
 
-**Status:** v0.7 draft, 2026-10-21. Corrections, questions and adoption reports are
-welcome as [issues](../../issues).
+**Status:** v0.8 draft, 2026-10-22. Corrections, questions and adoption reports are
+welcome as [issues](https://github.com/levente-simon/governed-semi-autonomous-development/issues).
 
 ## Documents
 
 | Document | For | Content |
 |---|---|---|
-| [method.md](method.md) | Leads and founders deciding whether to adopt it | Principles, roles and execution patterns, artefacts and the ledger, lifecycle and documentation chain, control layers in summary, specialists, capabilities, federation, quality and efficiency techniques, learning loop, assurance profiles, metrics, glossary |
-| [control-reference.md](control-reference.md) | Security and platform teams implementing it | Every control per layer (what it prevents, what it serves, its cost, its profile, its proof), the delegation and signing model, the message bus, the decision classifier, the release kit, a threat-model plan, the control-to-profile map |
+| [method.md](method.md) | Leads and founders deciding whether to adopt it | What the method requires and why: principles, roles and execution patterns, artefacts and the ledger, the lifecycle in outline, control layers in summary, specialists, capabilities, federation, quality and efficiency techniques, learning loop, assurance profiles, metrics |
+| [practice.md](practice.md) | Whoever runs a team: an orchestrator, an owner, or tooling that launches teams | The procedures: documentation chain, kickoff and re-checks, slice routine, routing and escalation by tier, checkpoints and vehicles, documentation fold, session continuity, sustain mode, the incident record |
+| [glossary.md](glossary.md) | Every reader | The terms used across the documents, in alphabetical order |
+| [control-reference.md](control-reference.md) | Security and platform teams implementing it | Every control per layer (what it prevents, what it serves, its cost, its profile, what keeps it, its proof and whether that proof is independent), the delegation and signing model, out-of-band CI, the message bus, the action and decision classifiers, the release kit, a threat-model plan, the control-to-profile map |
 | [claude-code-reference.md](claude-code-reference.md) | Teams implementing it on Claude Code | How roles, layers, patterns and rituals map to Claude Code features, with the documented caveats; templates; the planned operator's handbook |
 | [related-work.md](related-work.md) | Readers placing this against published work | The bodies of work this method is built out of, why they do not simply apply to this setting, and what the method is. No novelty claim |
 
-Start with [method.md](method.md). The others go deeper on demand.
+Start with [method.md](method.md), and keep [glossary.md](glossary.md) at hand. Read [practice.md](practice.md) when you run a team. The others go deeper on demand.
 
 ## At a glance
 
@@ -24,19 +26,26 @@ Start with [method.md](method.md). The others go deeper on demand.
 - **Execution patterns:** single session, sequential slices, scripted fan-out, project team, function teams, matrix.
 - **Eight control layers:** infrastructure isolation, session isolation, tool control, permissions and delegation, repository, messages, process, state and audit.
 - **Assurance profiles:** Lite, Standard and High, chosen per layer.
+- **Limits:**
+  - what is accepted at each profile, including product code that reaches main without a human reading it: [method.md](method.md) §12, residual risks;
+  - what is out of scope, such as the data sent to the model provider and agents inside the product: [method.md](method.md) §0;
+  - placement against security frameworks, with no crosswalk: [related-work.md](related-work.md), Standards and frameworks.
 
 ## Origin
 
 This method comes out of building [dethernety](https://dether.net), a commercial,
-graph-native threat modeling platform: a solo build since 2025, open-sourced in March 2026,
-and delivered through twelve minor releases since. The method is not how that work started.
+graph-native threat modeling platform: a solo build since 2025, open-sourced in February 2026,
+and released continuously since. The method is not how that work started.
 It emerged partway through, as the work outgrew a single session and moved to agent teams,
 and the controls here are what that transition produced.
 
-It is a working method rather than a proposal. Most of its controls exist because something
-went wrong without one; the learning loop in [method.md](method.md) §11 is how they arrived.
+It is a working method rather than a proposal, at the profiles the Maturity paragraph states. Most of its controls exist
+because something went wrong without one; the learning loop in [method.md](method.md) §11 is
+how they arrived.
 The evidence base is a single product, which is stated here because it bounds what the
 method can claim.
+
+**Maturity.** In the originating practice, the method runs at Lite and Standard, depending on the layer. The High controls, the message bus and the classifiers are specified and proposed. The method is a draft and changes quickly; the changelog marks breaking changes.
 
 ## License
 
