@@ -4,6 +4,28 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.10 -- 2026-10-26
+
+Changed
+
+- **Breaking (Lite): what the tool must provide.** Before kickoff, adopters check the tool against
+  "What the tool must provide" (control reference) and record each missing row as an accepted
+  residual. Where the chosen profile requires an affected control that is kept no other way, the
+  gap is also an exception, unless the control's Kept by cell says "otherwise expectation";
+  exceptions for missing tool features are reviewed yearly. Nothing the session can write or
+  switch on widens enforcement material, the tool's own configuration included; other user-level
+  configuration stays writable at Standard. A check that guards a tool call runs before the call
+  and sees the whole call. Nothing routes a Standard grant's permission prompt to anyone but the
+  owner. The L6 control "Local messaging with tool-attributed senders" is renamed "Local
+  messaging with senders set by the tool or the launch configuration" and applies where more
+  than one session runs. `claude-code-reference.md`: role sets come through `--settings` or managed
+  settings, settings files the session can reach are unwritable to it, and `autoMode` entries go
+  in user scope only where the session cannot write user settings.
+- Wording that no longer assumes one tool: a tier is the model and, where the tool has one, its
+  reasoning setting; specialists run as subagents or separate sessions; the scope check is a named
+  step of the pre-execution check; the start self-check runs from the tool's start hook, or else
+  the launch command gives it to the session as its first task.
+
 ## v0.9 -- 2026-10-26
 
 Changed

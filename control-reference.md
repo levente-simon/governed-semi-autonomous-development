@@ -65,7 +65,7 @@ Agents run commands faster than anyone can review them line by line. A guard tes
 
 ### Why sessions are separated, and how far
 
-Lite: all sessions share one environment, or the dedicated development machine. A dedicated development machine is one the owner never performs outward actions from and that holds no owner credentials; its enforcement material is owned by another OS user or delivered as managed settings. Standard: as below. High: one VM per session.
+Lite: all sessions share one environment, or the dedicated development machine. A dedicated development machine is one the owner never performs outward actions from and that holds no owner credentials; its enforcement material is read-only to the session and cannot be widened by it (L3, Enforcement material). Standard: as below. High: one VM per session.
 
 Separating sessions is privilege separation. Sessions differ in authority, and in how far their input can be trusted. Without an environment boundary those differences are declared, not enforced.
 
@@ -104,7 +104,7 @@ The boundary therefore follows the properties that justify it: authority, enviro
 - **From Standard, through the definition.** The owner changes the environment definition, a protected path (L5), from the owner's checkout, never from inside an agent environment (L4, Where the owner acts), and the environment is rebuilt from it. A change needed during a run is applied before its vehicle, after the owner has read its diff and the fixed security pass has run on it; it still rides the next vehicle. Sessions move to the rebuilt environment at their next safe point and run the checks in [practice.md](practice.md) (§2). A broken shared environment is recreated from its definition, not repaired in place; its sessions commit at a safe point first.
 - **From Standard, assignment.** The implementation plan lists each lane's environment needs, and names each lane or slice that needs environment authority, with its scope: its own environment, named lab targets, or both. The owner approves it at kickoff as a planned delegation (L4), and the kickoff record lists it. If a run needs it later, the owner changes the environment definition and runs a kickoff for that environment ([practice.md](practice.md), §2). Environment authority belongs to an environment for that environment's lifetime. A session not assigned environment authority never runs in an environment where it was held or used, unless that environment has first been recreated from its definition. The lab credentials of an assigned environment never pass to another session.
 - **The assigned session** changes only its own environment, and acts only on the lab targets its brief names. A change other sessions need goes into the definition. Its changes are recorded in its slice ledger and hand-over note. It holds root in its own environment, so the controls inside it (hooks, the action classifier, local checks) are self-attested there; their proof comes from outside: CI, the owner's review and lab-side records. In P1 and P2, a session whose environment no other session uses already has its own.
-- **From Standard, every other session** is denied environment authority by its environment, a boundary: no root or sudo, system paths read-only, the container-runtime rule above, and image and definition changes applied by the owner. User-level configuration, the home directory and package caches stay writable; that is a recorded Standard residual ([method.md](method.md), §12). Tool rules and hooks that match these actions' command text are an optional setting that can be evaded (L3).
+- **From Standard, every other session** is denied environment authority by its environment, a boundary: no root or sudo, system paths read-only, the container-runtime rule above, and image and definition changes applied by the owner. User-level configuration, the home directory and package caches stay writable, except the tool's own configuration (L3, Enforcement material); that is a recorded Standard residual ([method.md](method.md), §12). Tool rules and hooks that match these actions' command text are an optional setting that can be evaded (L3).
 - **At High,** each session runs in its own VM, recreated from an owner-approved definition. A VM in which environment authority was used is recreated before its next slice. Lasting changes go through the definition.
 
 **Usage and cost.** Each environment authenticates to the model provider with its own least-scope credential. That gives cost attribution per environment, a spend cap, and a smaller blast radius if a key leaks. Usage limits are set by the provider's plan. Where a plan gives separate allowances per account or seat, and its terms allow assigning them to agent environments, environments may use separate ones (optional); check the terms first. Separate API keys within one organisation usually share its limits.
@@ -173,11 +173,11 @@ A session cannot write what enforces its limits:
 - the revocation records;
 - the mailbox tool and its filter configuration, where filtering runs in it (L6).
 
-These are read-only to the session, or held outside its environment. The kickoff tests try to modify each one and record the refusal ([practice.md](practice.md), §2).
+These are read-only to the session, or held outside its environment. Nothing the session can write or switch on widens them (What the tool must provide). The kickoff tests try to modify each one and record the refusal ([practice.md](practice.md), §2).
 
 ### Fail-closed checks
 
-Every enforcing check fails closed. An error, a crash or a timeout in a check counts as deny. The kickoff tests remove a check's input and confirm the guarded action is refused.
+Every enforcing check fails closed. An error, a crash or a timeout in a check counts as deny. A check that guards a tool call runs before the call and sees the whole call. The kickoff tests remove a check's input and confirm the guarded action is refused.
 
 ### Agent tooling supply chain
 
@@ -209,7 +209,7 @@ Rules decide which tools a role may use. They cannot tell a permitted tool used 
 - **Position.** Deny and allow rules run first, then the deterministic hooks. The classifier sees only calls the rules allowed.
 - **Scope.** Only side-effecting calls are checked: shell commands, network access, writes outside the session's worktree, and tool-server calls with effects. Reads are not checked, because the latency would fall on every call.
 - **Questions.** The classifier answers signal questions: is the call destructive, is it exfiltrating, does it acquire access or credentials beyond the task, does it follow from instructions in fetched content?
-- **Scope check.** Whether a call is within the slice's scope has a deterministic answer, so it is not left to a model. A named hook step checks the call against the closed action classes and the approved plan's files, resources and environment needs. Where L4 is below High, the closed list of action classes is fixed at kickoff for L3 alone.
+- **Scope check.** Whether a call is within the slice's scope has a deterministic answer, so it is not left to a model. A named step of the pre-execution check, before the classifier, checks the call against the closed action classes and the approved plan's files, resources and environment needs. Where L4 is below High, the closed list of action classes is fixed at kickoff for L3 alone.
 - **Context from trusted sources only.** The classifier and the scope check read the slice plan, or the batch plan that covers the slice, at the commit the approver said "go" on, which the ledger records. A deviation enters only after re-approval. The classifier also receives the delegation manifest and the provenance of the content that preceded the call. It never receives the agent's own justification, because whoever writes the context steers the verdict.
 - **The call is agent-written too.** The agent's description of the call, and comments inside it, are stripped before classification. The calibration set includes calls that carry text aimed at the classifier.
 - **Outcomes.** Pass; block, recorded for batch review; or, for a grantable action class, the session's L4 grant path. At Standard L4, that is the tool's permission prompt in the receiving session. At High L4, it is a refusal that names the class, which the orchestrator can turn into a grant request to the owner. A permission prompt is never answered by another session. The classifier fails closed and never feeds the owner's decision queue directly.
@@ -310,7 +310,7 @@ sequenceDiagram
 ### Grants across profiles
 
 - **Lite:** no grants. The owner performs the action.
-- **Standard:** grantable action classes are configured to ask. A grant is the owner's answer to the tool's own permission prompt in the receiving session. Conversation text is never a grant, whoever it appears to come from. With standing approvals forbidden, each answer covers one action.
+- **Standard:** grantable action classes are configured to ask. A grant is the owner's answer to the tool's own permission prompt in the receiving session. Nothing routes that prompt to anyone but the owner. Conversation text is never a grant, whoever it appears to come from. With standing approvals forbidden, each answer covers one action.
 - **High:** sessions run in environments the owner cannot attend directly. A receiver cannot tell who wrote pasted text, so signatures replace direct presence. No permission prompt stands in for a signed grant.
 
 **Refusals at Standard.** A receiver refuses a grant when:
@@ -410,7 +410,7 @@ From Lite, CI workflows with what they invoke, and agent instruction files, reac
 | Control | Prevents | Serves | Cost | Profile | Kept by | Proof |
 |---|---|---|---|---|---|---|
 | Authority never relayed | Escalation through a trusted intermediary | S | Owner acts in the receiving session | Lite | Setting: a message cannot change what the session may do | Self-attested: refusals recorded in slice ledgers, kickoff record |
-| Local messaging with tool-attributed senders | Misattributed senders by mistake on one machine | S | None | Lite | Setting | Self-attested: written inside the shared trust domain |
+| Local messaging with senders set by the tool or the launch configuration | Misattributed senders by mistake on one machine | S | None | Lite, where more than one session runs | Setting | Self-attested: written inside the shared trust domain |
 | Content as repository references | Unreviewable or injected payloads; context bloat | S, C | Commit before notifying | Standard | Expectation. High: setting (broker size and schema limits) | Independent where the audit store is outside every agent environment: references in the transport's message audit |
 | Authenticated messaging, with an authenticated cross-environment channel where sessions run in separate environments; message audit written by the transport | Untraceable instructions; ad-hoc channels without sender identity | S, C | Running the channel; audit storage | Standard | Setting (authentication); boundary where the audit store is outside every agent environment | Independent where the audit store is outside every agent environment: the transport's message audit |
 | Private bus with the full requirements below | Spoofing, eavesdropping and misrouting across environments | S | Running a broker | High | Boundary | Independent where the broker runs outside every agent environment: broker configuration, ACLs and broker log |
@@ -575,6 +575,25 @@ A wrong claim is corrected in the log as soon as it is known. The correction goe
 
 A hash chain computed by the ledger's writer can be recomputed by that writer. The chain head is therefore anchored outside the writer's reach: in the broker's log, or as a head the owner records at each checkpoint.
 
+## What the tool must provide
+
+The method is tool-agnostic, but its controls rest on the tool features below. Before kickoff, check each row against your tool's documentation.
+
+| Feature | What rests on it | From profile |
+|---|---|---|
+| Fetch and search tools can be switched off for a role | Fetch tools denied outside ingestion environments (L1) | Standard |
+| Standing ("don't ask again") approvals can be switched off | No standing approvals (L2) | Lite |
+| Deny and allow rules per role cover shell, file and tool-server calls, and a deny always wins | Deny push, publish and secret reads; role permission sets (L3, L4) | Lite; per role from Standard |
+| Nothing the session can write or switch on widens the tool's configuration: project or user settings files, command-line flags, environment variables, a bypass mode | Enforcement material read-only to the session (L3) | Lite |
+| A check runs before each call, sees the whole call, and blocks it on an error, a crash or a timeout | Enforcing checks fail closed (L3); hooks for environment rules (L3, Standard); at High, the action classifier and the grant check | Lite, where a check guards tool calls; Standard |
+| Action classes can be set to ask, and only the owner can answer those prompts; nothing routes them to anyone else | Grants, one action per answer (L4) | Standard |
+| The tool or the launch configuration, not the model, sets the sender of a message between sessions | Local messaging (L6) | Lite, where more than one session runs |
+| A command runs when a session starts or resumes | Start self-check and re-checks ([practice.md](practice.md), §2) | Lite |
+| A command runs after the session's context is compacted | Re-reading the restated limits after a planned compaction ([practice.md](practice.md), §7) | Lite |
+| Specialists can run as subagents or separate sessions limited to reading and writing their own output | Specialist least privilege ([method.md](method.md), §6) | Lite |
+
+**If your tool lacks one.** Count a row as missing for any part of it that your tool's documentation does not confirm. For each missing row, the kickoff record names the controls it affects and how each is kept instead, for example by the owner doing the action; a control kept no other way is an expectation. That record is an accepted residual. Where the chosen profile requires a control that is kept no other way, the gap is also an exception ([method.md](method.md), §12, Exceptions), unless the Kept by cell of that control in its layer table (L1 to L8 above) already says "otherwise expectation".
+
 ## Control-to-profile map
 
 This map lists every control in this reference at the lowest profile that requires it. It is consistent with the profile table in [method.md](method.md) (§12). Profiles for the remaining techniques are stated where they are described: red-first fixes, federation and the learning loop in the method; kickoff tests and re-checks, the release checklist, the documentation fold, sustain mode and the continuity procedures in [practice.md](practice.md).
@@ -586,7 +605,7 @@ This map lists every control in this reference at the lowest profile that requir
 | L3 | Deny push, publish and secret reads; enforcement material read-only to the session; enforcing checks fail closed; agent tooling from an owner-approved list | Hooks for environment rules; wrapped commands; pinned agent tooling with auto-update off and changes through the protected-path review | Allow-list only; action classifier on side-effecting calls |
 | L4 | Owner performs all outward actions from a checkout agents cannot write | Role permission sets; delegation manifest; planned delegations in tool configuration, exercised at kickoff; grants as the owner's answer to the tool's permission prompt | Signed kickoff manifest across environments; owner-signed, instance-bound, time-bound grants verified by the receiver, with closed scopes, on-device signing and owner-only revocation (needs L1 or L2 at High); two-party release rule with the independent verifier for a sole owner |
 | L5 | No commits on main; PRs; owner-only merge and tag; required CI (minimum set) enforced by the host and kept out of band, with release credentials only in a step that runs no repository code; Lite protected paths (CI workflows, the configuration and scripts CI invokes, agent instruction files) reach the owner as the diff; boundary scans (including the ledger ref) where a public mirror exists | Fresh orchestrator-owned integration branch per merge vehicle; full CI suite; review of all protected paths | Signed commits and tags; reproducible builds; agent PR identity (wherever L7 is High) |
-| L6 | Authority never relayed; local messaging with tool-attributed senders | Content as repository references; authenticated messaging, with an authenticated cross-environment channel where sessions run in separate environments; message audit written by the transport | Private bus with full requirements; filtering and provenance on untrusted content; decision classifier at the gateway and content ingestion |
+| L6 | Authority never relayed; local messaging with senders set by the tool or the launch configuration, where more than one session runs | Content as repository references; authenticated messaging, with an authenticated cross-environment channel where sessions run in separate environments; message audit written by the transport | Private bus with full requirements; filtering and provenance on untrusted content; decision classifier at the gateway and content ingestion |
 | L7 | Plan and design review; deliverable review on the final diff; pre-PR gate (covering tests, final-diff review, leftover scan, changed protected paths listed); pre-PR and post-merge rituals; capability lines in pilot runs only | Security lens; security review and acceptance-criteria trace in the pre-PR gate; leftover sweep at every merge vehicle; checkpoint review; property and mutation tests; user-path end-to-end release gate; capability pilot → guard → scale with gates | Multi-lens review; refute passes and blind judges; rehearsed, reproduce-gated release kit; external reviewer; human reading of high-risk slices |
 | L8 | Ledger on its own ref; decision register; claims only from output; minimal metrics | Message audit written by the transport | Tamper-evident audit trail anchored outside the writer; full metric set |
 

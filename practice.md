@@ -22,13 +22,14 @@ Shape and Plan run as a chain of documents. Each has a review gate and a decisio
 
 Before the first kickoff, set up in this order:
 
-1. The environment: a dedicated development machine or one isolated environment ([control-reference.md](control-reference.md), L1).
-2. Deny rules for push, publish and secret reads, with the enforcement material read-only to the session (control reference, L3).
-3. The ledger ref and the decision register ([method.md](method.md), §3).
-4. Required CI on the host, or the recorded host-plan exception (control reference, L5).
-5. The protected-path list, in a protected file (control reference, L5).
-6. The start self-check and the re-injection of limits (below, and §7).
-7. The pre-PR gate and post-merge rituals (control reference, L7).
+1. Check the tool against [control-reference.md](control-reference.md) (What the tool must provide), and record each missing row.
+2. The environment: a dedicated development machine or one isolated environment ([control-reference.md](control-reference.md), L1).
+3. Deny rules for push, publish and secret reads, with the enforcement material read-only to the session (control reference, L3).
+4. The ledger ref and the decision register ([method.md](method.md), §3).
+5. Required CI on the host, or the recorded host-plan exception (control reference, L5).
+6. The protected-path list, in a protected file (control reference, L5).
+7. The start self-check and the re-injection of limits (below, and §7).
+8. The pre-PR gate and post-merge rituals (control reference, L7).
 
 ### Launching sessions
 
@@ -49,7 +50,7 @@ At Lite, items without a counterpart (planned delegations, grants) are skipped. 
 
 ### Start self-check and re-checks
 
-A new session started with an already-tested launch command, in an already-tested environment, runs the **start self-check**. It confirms its identity, re-injects the restated limits from the ledger, and tries one denied action, one enforcement-material write and one credentialed action. It needs no owner action. A launch command that differs only in its tier (model and effort) counts as tested. Any other change to the launch configuration needs a kickoff. An environment rebuilt from a definition change counts as tested when the change touches no enforcement material, OS user or group, mount, credential or network setting; its sessions run the start self-check and, from Standard, the environment-authority refusals and the container-runtime check, and a newly planned delegation is exercised once. Any other definition change needs a kickoff.
+A new session started with an already-tested launch command, in an already-tested environment, runs the **start self-check**. It confirms its identity, re-injects the restated limits from the ledger, and tries one denied action, one enforcement-material write and one credentialed action. It needs no owner action. It runs from the tool's start hook, or, where the tool has none, the command that launches the session gives it to the session as its first task. A launch command that differs only in its tier (model and reasoning setting) counts as tested. Any other change to the launch configuration needs a kickoff. An environment rebuilt from a definition change counts as tested when the change touches no enforcement material, OS user or group, mount, credential or network setting; its sessions run the start self-check and, from Standard, the environment-authority refusals and the container-runtime check, and a newly planned delegation is exercised once. Any other definition change needs a kickoff.
 
 Enforcement can drift after kickoff, so the same check runs again as a **re-check**:
 

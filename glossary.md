@@ -80,7 +80,8 @@
 | **Start self-check** | The mechanised check a new session runs on an already-tested environment and launch configuration: identity, restated limits re-injected from the ledger, one denied action, one enforcement-material write, one credentialed action ([practice.md](practice.md), §2) |
 | **Stop** | In tier escalation, a worker's report that it cannot complete the slice as planned. Pauses, usage limits, environment failures and returned plan corrections are not stops ([method.md](method.md), §10) |
 | **Sustain mode** | The steady-state maintenance loop for a released product; outlives initiatives |
-| **Tier** | A session's configuration: model and effort level. Set per slice from its complexity-and-risk class, as a launch parameter of the owning worker's session. A launch command that differs only in its tier counts as tested ([practice.md](practice.md), §2). A tier never changes permissions. The classifiers' decider models are not tiers |
+| **Tier** | A session's configuration: the model and, where the tool has one, its reasoning setting. Set per slice from its complexity-and-risk class, as a launch parameter of the owning worker's session. A launch command that differs only in its tier counts as tested ([practice.md](practice.md), §2). A tier never changes permissions. The classifiers' decider models are not tiers |
+| **Tool** | The agent program a session runs in. The actions it lets the model take are tool calls |
 | **Trust anchor** | The owner's public key, provisioned into each environment image at creation |
 | **Trust domain** | The set of sessions that share an environment, its credentials and its enforcement material. Compromise of one is compromise of all |
 | **Two-party rule** | At High, a release needs the owner and a second human, or for a sole owner an independent verifier ([control-reference.md](control-reference.md), L4) |

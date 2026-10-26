@@ -6,7 +6,7 @@
 
 ## Scope of this mapping
 
-This document maps the method to Claude Code. Features named here appear in the official documentation (code.claude.com). Where Claude Code has no native mechanism, the reference implementation adds one, and the text says so. Items not confirmed are marked "(to verify)". Where this document says the reference implementation adds, runs or ships a mechanism for a High control, the message bus or a classifier, that mechanism is specified and proposed, not in use in the originating practice (README, Maturity).
+This document maps the method to Claude Code. It is the Claude Code form of the requirements in [control-reference.md](control-reference.md) (What the tool must provide). Features named here appear in the official documentation (code.claude.com). Where Claude Code has no native mechanism, the reference implementation adds one, and the text says so. Items not confirmed are marked "(to verify)". Where this document says the reference implementation adds, runs or ships a mechanism for a High control, the message bus or a classifier, that mechanism is specified and proposed, not in use in the originating practice (README, Maturity).
 
 ### Roles
 
@@ -82,13 +82,13 @@ From Standard, a session assigned environment authority runs in its own containe
 
 **L4.**
 
-- **Permission sets.** Role permission sets are settings files. Apply them at kickoff as project or local settings, through `--settings`, or as managed settings in the environment image. Where `allowManagedPermissionRulesOnly` is set, they must be managed settings. A plugin cannot carry them: the documentation states that a plugin's `settings.json` applies only the `agent` and `subagentStatusLine` keys.
+- **Permission sets.** Role permission sets are settings files. Apply them at kickoff through `--settings` or as managed settings in the environment image, from files the session cannot write. Where `allowManagedPermissionRulesOnly` is set, they must be managed settings. No settings file Claude Code reads for the session, user and local settings included, is writable by it, and no location Claude Code reads settings from is in a directory it can write. Whether the worktree's `.claude/settings.json` and `.claude/settings.local.json` locations can be kept unwritable is not confirmed (to verify). A plugin cannot carry them: the documentation states that a plugin's `settings.json` applies only the `agent` and `subagentStatusLine` keys.
 - **Planned delegations.**
   - Each planned delegation becomes a narrow `allow` rule in the role's permission set.
-  - Where the session runs in auto mode, it also becomes an `autoMode` `allow` or `environment` entry in user, managed or `--settings` scope.
+  - Where the session runs in auto mode, it also becomes an `autoMode` `allow` or `environment` entry in managed or `--settings` scope, or in user scope only where the session cannot write user settings.
   - An `autoMode.allow` entry clears only soft blocks. A delegation that touches a `hard_deny` class needs the narrow `permissions.allow` rule, which resolves before the classifier. The other option is a change to that `hard_deny` entry, which is impossible for managed entries.
   - `claude auto-mode config` prints the effective configuration for the kickoff record.
-- **Standard grants.** Grantable action classes sit in `ask`. The owner answers the permission prompt in the receiving session. With no standing approvals, each answer covers one action.
+- **Standard grants.** Grantable action classes sit in `ask`. The owner answers the permission prompt in the receiving session. No `PermissionRequest` hook or prompt tool answers for the owner. With no standing approvals, each answer covers one action.
 - **High grants.** The delegation manifest and signed grants have no native mechanism. The reference implementation adds them:
   - The owner's public key is written into the environment image. The private key stays on the owner's device.
   - A `PreToolUse` hook, with `"onFailure": "block"`, checks each grantable action against the signed manifest entries. It checks the signature, the receiving session instance, the action class and expiry, and the absence of a revocation on the owner-only ref. It records each use in the slice ledger, and it denies by default. Where the action classifier runs, this check is the first step of the classifier hook (L3).
@@ -180,7 +180,7 @@ The reference implementation ships as:
 2. **the enforcement layer, as a plugin plus a settings bundle (or managed settings).**
    - The plugin carries the hooks, ritual skills, capability workflows and the mailbox MCP server. Managed `enabledPlugins` force-enables it, or `allowManagedHooksOnly` blocks its hooks.
    - The settings bundle carries the role permission sets, the `autoMode` entries and the specialist definitions that need `permissionMode` or `mcpServers`. Plugin agents ignore those fields. Specialists carry no frontmatter hooks, which `allowManagedHooksOnly` blocks; their hooks live in managed settings or the plugin.
-   - The bundle's `autoMode` entries are applied in user, managed or `--settings` scope, because the classifier ignores them in project and local settings.
+   - The bundle's `autoMode` entries are applied in managed or `--settings` scope, or in user scope only where the session cannot write user settings, because the classifier ignores them in project and local settings.
 
 
 ## Templates
