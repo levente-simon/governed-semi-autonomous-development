@@ -40,15 +40,16 @@ Kickoff tests each environment and its launch configuration in both directions:
 
 - a denied action is tried and refused;
 - each planned delegation is exercised once, harmlessly, and allowed;
-- each piece of enforcement material is modified and the write refused;
+- each piece of enforcement material is modified and the write refused; in an environment whose session holds environment authority, the write is tried without root and recorded as self-attested ([control-reference.md](control-reference.md), L1);
 - each enforcing check is run with its input removed, and the guarded action is refused; this includes a grantable action tried with its grant source removed;
-- a credentialed action is tried and refused with every host credential in the environment: a push to the public host, and a merge or tag through the host's API.
+- a credentialed action is tried and refused with every host credential in the environment: a push to the public host, and a merge or tag through the host's API;
+- from Standard, in each environment whose sessions hold no environment authority, a privilege escalation, a write to a system path and a lab action are tried, from a process the session starts, and refused; any container runtime a session reaches is confirmed rootless or confined to a VM serving that session alone.
 
 At Lite, items without a counterpart (planned delegations, grants) are skipped. The results go into a committed kickoff record, which the board links to.
 
 ### Start self-check and re-checks
 
-A new session started with an already-tested launch command, in an already-tested environment, runs the **start self-check**. It confirms its identity, re-injects the restated limits from the ledger, and tries one denied action, one enforcement-material write and one credentialed action. It needs no owner action. A launch command that differs only in its tier (model and effort) counts as tested. Any other change to the launch configuration needs a kickoff.
+A new session started with an already-tested launch command, in an already-tested environment, runs the **start self-check**. It confirms its identity, re-injects the restated limits from the ledger, and tries one denied action, one enforcement-material write and one credentialed action. It needs no owner action. A launch command that differs only in its tier (model and effort) counts as tested. Any other change to the launch configuration needs a kickoff. An environment rebuilt from a definition change counts as tested when the change touches no enforcement material, OS user or group, mount, credential or network setting; its sessions run the start self-check and, from Standard, the environment-authority refusals and the container-runtime check, and a newly planned delegation is exercised once. Any other definition change needs a kickoff.
 
 Enforcement can drift after kickoff, so the same check runs again as a **re-check**:
 
@@ -65,7 +66,7 @@ The results are appended to the kickoff record. The checks are mechanised, not l
 1. The worker confirms it understands the slice.
 2. It writes the slice plan and reviews it itself.
 3. It sends "plan ready".
-4. The orchestrator reviews the plan, with specialist lenses scaled to the slice's risk, checks its assumptions against those of the slices in flight, logs each assumption it passes on to another slice, and says "go" or returns corrections. The approved plan's commit is recorded in the ledger.
+4. The orchestrator reviews the plan, with specialist lenses scaled to the slice's risk, checks its assumptions against those of the slices in flight, logs each assumption it passes on to another slice, checks any use of environment authority against the owner's assignment, and says "go" or returns corrections. The approved plan's commit is recorded in the ledger.
 5. The worker implements, red-first for fixes ([method.md](method.md), §9).
 6. It runs the tests the way CI runs them.
 7. A final review covers the slice diff together with the test output.
@@ -171,7 +172,7 @@ Limits can drop out of a session's context between restarts and compactions. So 
 
 Usage limits, the owner's absence and overnight periods use one protocol:
 
-1. Before the owner leaves, the orchestrator lists the grants the queued slices will need. At High, the owner issues signed grants with an expiry covering the pause. At Standard, a grant cannot be issued ahead, so slices that need grantable actions run while the owner is present, or are re-planned.
+1. Before the owner leaves, the orchestrator lists the grants and environment changes the queued slices will need, and the owner applies the environment changes first. At High, the owner issues signed grants with an expiry covering the pause. At Standard, a grant cannot be issued ahead, so slices that need grantable actions run while the owner is present, or are re-planned.
 2. Stop at a safe point.
 3. Commit work in progress.
 4. Schedule the resume.
@@ -223,7 +224,7 @@ When a session may be compromised or misled:
 1. Halt the agent sessions, and stop scheduled resumes.
 2. Revoke the affected credentials and grants; at High, publish signed revocations.
 3. Freeze integration: no merge, tag or publish until the review below is done.
-4. Diff what landed since the last known-good vehicle, using the ledger, the host's merge history and the message audit, and decide what to revert. Check what sits on the internal remote too: open branches, integration branches and the ledger ref. For every release vehicle since then, yank, re-release or notify users, through the emergency vehicle and the adopter's incident process.
+4. Diff what landed since the last known-good vehicle, using the ledger, the host's merge history and the message audit, and decide what to revert. Check what sits on the internal remote too: open branches, integration branches and the ledger ref. For every release vehicle since then, yank, re-release or notify users, through the emergency vehicle and the adopter's incident process. Review the lab and shared resources the affected sessions could reach, from records held outside the suspect environments, such as the lab provider's logs. Run no revert command and restore no backup that a suspect session wrote.
 5. Recreate every environment in the affected trust domain from its definition, with new credentials, and run a full kickoff before any session resumes. Keep the old environments, or a snapshot, until step 4 is done.
 
 The event is then an incident with a root-cause class like any other.

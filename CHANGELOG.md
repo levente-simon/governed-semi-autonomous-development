@@ -4,6 +4,123 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.9 -- 2026-10-26
+
+Changed
+
+- **Breaking (every profile): environment authority.** Environment authority is the mandate for
+  any action that changes what another session, or a later session in the same environment, gets
+  by default, or that acts on a store or resource outside the environment. Adding a version to a
+  content-addressed store from a committed pin, downloads the environment's definition allows,
+  frozen-mode installs from the lockfile, installing a dependency the approved slice plan adds, the
+  session's own containers and throwaway services, and its own pushes and messages are not
+  environment authority. Environment authority is: system packages, anything on the shared `PATH`,
+  user-level or global configuration, credentials, pruning a shared cache or a container runtime,
+  and any read or write of a lab or shared store. Environment changes go through the owner. The
+  orchestrator never holds environment authority, and a grant never confers it. A container
+  runtime counts as root in the environment it reaches. At Lite, no session is assigned
+  environment authority: the brief states the rule, a session lists any environment change it
+  makes in its hand-over note, and the owner makes environment changes from the owner's own shell
+  or account, never through an agent session. "Destructive work" is folded into environment
+  authority and removed from the glossary.
+- **Breaking (Standard): environment authority is assigned and isolated.** Environment authority is
+  assigned only as a planned delegation at kickoff, per lane or per slice, and recorded in the plan
+  and the kickoff record. It belongs to an environment for that environment's lifetime: a session
+  not assigned it never runs in an environment where it was held or used, unless that environment
+  has first been recreated from its definition, and the lab credentials of an assigned environment
+  never pass to another session. A session assigned it gets its own environment. No session holds
+  both external ingestion and environment authority. Every other session is denied it by its
+  environment, a boundary: no root or sudo, system paths read-only, a container runtime that is
+  rootless or confined to a VM serving one session alone, image and definition changes applied by
+  the owner. Lab credentials sit only in the environments of sessions assigned environment
+  authority. The owner changes an environment through its definition, from the owner's checkout,
+  and the environment is rebuilt; a broken shared environment is recreated, not repaired. A need
+  for environment authority found during a run is met by a definition change and a kickoff for that
+  environment; other needs are met by a definition change and a rebuild. New kickoff tests: a
+  privilege escalation, a system-path write and a lab action are refused, and any container runtime
+  is confirmed rootless or confined to a VM serving one session alone.
+- **Breaking (High): environments are recreated, not changed.** Each session's VM is recreated from
+  an owner-approved definition; a VM in which environment authority was used is recreated before its
+  next slice, and lasting changes go through the definition.
+- **Breaking (every profile): smaller obligations.** The plan lists each lane's environment needs.
+  Environment changes are owner chores, batched into one owner visit, and the pause protocol lists
+  them. Changes made under environment authority are recorded in the slice ledger and the hand-over
+  note. Slice-plan review checks each use of environment authority against the owner's assignment.
+  After a suspected compromise, lab and shared resources are reviewed from records held outside the
+  suspect environments; no revert command or backup written by a suspect session is used.
+- "What can catch misdirection inside the baseline" (control reference, L4) states that no
+  merge-time control sees an environment action taken during a run, and what bounds it per profile:
+  at Lite only the brief, from Standard the isolation split, the environment boundary and
+  least-scope credentials. A session assigned environment authority holds root in its own
+  environment, so its in-environment controls are self-attested there; the L3 rows for enforcement
+  material, hooks and the action classifier say so, and the kickoff's enforcement-material write
+  there is tried without root and recorded as self-attested.
+- "Where the owner acts" (control reference, L4): for environment changes, "the owner never acts
+  inside an agent environment" holds from Standard; at Lite the owner works from the owner's own
+  shell or account.
+- The owner's row (method §2) adds environments; the orchestrator's "Never" column adds "holds
+  environment authority"; the worker's adds any action that needs environment authority without
+  being assigned it. In P1 and P2, the agent session prepares kickoff and environment changes.
+  Grants no longer list an infrastructure write among their examples. An environment rebuilt from a
+  definition change that touches no enforcement material, OS user or group, mount, credential or
+  network setting counts as tested; from Standard, its sessions rerun the environment-authority
+  refusals and the container-runtime check.
+- `related-work.md`: this method's isolation cell names the split by authority, environment
+  authority and input trust.
+
+Added
+
+- Residuals. At every profile: misdirection can steer a session that holds environment authority
+  within its assignment. Lite: environment changes rest on the brief, any session can change the
+  shared environment, and a container runtime counts as root where it reaches. Standard: the shared
+  home directory, the container runtime and a persistent package cache, through which one session
+  can poison what later installs receive, join the shared-worker residual; a new residual records
+  that only system-level changes meet a boundary, and that an assigned session's checks and records
+  in its own environment are self-attested.
+- Threat-model plan: environment definitions and images as a data store and a trust boundary; a
+  threat class for environment changes made through misdirection, with its mitigations.
+- Glossary: "Environment authority", distinguished from capability.
+- `claude-code-reference.md`: the container or VM as the boundary; the sandbox as an optional extra
+  layer, with `failIfUnavailable`, `allowUnsandboxedCommands: false` and nothing in
+  `excludedCommands`; deny rules and hooks as a setting that can be evaded; the list of what runs
+  outside the sandbox. The orchestrator and worker rows, and the implementation plan, kickoff
+  record, common brief, slice plan, slice ledger and hand-over note templates, state environment
+  authority.
+
+Migrating
+
+- Every profile: add the rule to every brief; send environment changes to the owner as batched
+  chores; list each lane's environment needs in the plan; record changes made under environment
+  authority in the slice ledger and hand-over note; stop granting environment authority; remove
+  environment authority from the orchestrator.
+- Lite: assign environment authority to no session; the owner makes environment changes from the
+  owner's own shell or account, never through an agent session.
+- Standard: remove root and sudo from every environment whose sessions hold no environment
+  authority, and make system paths read-only there; replace a rootful container runtime with one
+  that is rootless or confined to a VM serving one session alone; keep lab credentials only in the
+  environments of sessions assigned environment authority; give each session assigned environment
+  authority (environment changes of its own, or lab actions) its own environment, never also
+  assigned external ingestion; recreate an environment from its definition before a session not
+  assigned environment authority runs where it was held or used; list the assignments in the plan
+  and the kickoff record; change environments only through their definitions; add the new kickoff
+  tests.
+- High: recreate VMs from the definition instead of changing them, and recreate a VM after
+  environment authority was used in it.
+- Briefs and slice plans that say "destructive work" say "environment authority".
+
+New required controls: at every profile, environment changes through the owner, stated in the
+brief, with any change a session makes listed in its hand-over note; environment needs per lane in
+the plan; environment authority never by grant and never to the orchestrator; changes under
+environment authority recorded in the slice ledger and hand-over note; the lab and shared-resource
+review after a suspected compromise. At Standard: environment authority only as a planned
+delegation at kickoff, held by an environment for its lifetime; its own environment for a session
+assigned it, never also assigned external ingestion; recreation before a session not assigned it
+runs there; denial to every other session by its environment, including the container-runtime
+rule; lab credentials only in the environments of sessions assigned it, never passed on;
+definition changes from the owner's checkout; the kickoff tests of refused environment changes and
+the container-runtime check. At High, VMs recreated from an owner-approved definition, and
+recreated after environment authority was used.
+
 ## v0.8.2 -- 2026-10-26
 
 Added

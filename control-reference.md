@@ -49,16 +49,17 @@ The layer objectives and the profile table are in [method.md](method.md) (§5, �
 
 | Control | Prevents | Serves | Cost | Profile | Kept by | Proof |
 |---|---|---|---|---|---|---|
-| Isolated environment | A command that deletes, fills or rewrites more than intended, hitting the owner's workstation | S | Setup; slower first start | Lite: a dedicated development machine, or one isolated environment shared by the sessions. Standard: split by authority and input trust (below). High: VM per session | Boundary | Self-attested: environment definition, environment list in the ledger |
+| Isolated environment | A command that deletes, fills or rewrites more than intended, hitting the owner's workstation | S | Setup; slower first start | Lite: a dedicated development machine, or one isolated environment shared by the sessions. Standard: split by authority, environment authority and input trust (below). High: VM per session | Boundary | Self-attested: environment definition, environment list in the ledger |
 | No host or production credentials mounted or forwarded (SSH agent, git credential helpers, cloud CLI sessions) | Agents, or content they read, reaching production or personal accounts | S | Owner performs credentialed steps | Lite | Boundary | Self-attested: kickoff record of a refused credentialed action |
 | Destructive and adversarial tests only against stubbed copies or throwaway stores | One test taking down the environment that every session shares | S, C | Stubs and seed scripts | Lite | Expectation. Standard: setting where an L3 hook covers it | Self-attested: test configuration, hook tests |
+| Environment changes through the owner; environment authority only as a planned delegation at kickoff, never by grant and never to the orchestrator | A mistaken or misled session changing what other or later sessions get, or acting on shared or lab resources; the orchestrator's misdirection reaching the environment | S, C | Environment changes wait for the owner, batched per visit; from Standard, an image rebuild per batch and an environment per assigned session | Lite: an expectation stated in the brief; no session is assigned environment authority, and a session lists any environment change it makes in its hand-over note. Standard: assigned at kickoff as a planned delegation, and denied to every other session by its environment (no root or sudo; system paths read-only; a container runtime that is rootless or confined to a VM serving that session alone; image and definition changes applied by the owner) | Lite: expectation. Standard: boundary for system-level changes and the container runtime's root; expectation for user-level configuration, caches and, in a shared worker environment, other sessions' containers, recorded residuals | Lite: self-attested: the brief and hand-over notes, which show the rule was stated, not that it held. Standard: self-attested: the kickoff record's assignments and refused environment changes. Independent (partial): the host's record of owner-merged environment-definition changes; the lab provider's audit log of actions under each environment's lab credential |
 | Orchestrator environment runs no product code and no fetches | Worker-written code or fetched content running with the orchestrator's authority: its integration push credential, ledger ref and grants | S | Integrated suites and regeneration in CI; a narrow egress allow-list | Standard | Setting (fetch tools denied); boundary (a narrow egress allow-list); expectation for product code | Independent (partial): CI runs of the integrated suites show where they ran, not that the orchestrator ran nothing; the egress deny log outside the environment. Self-attested: the role set, kickoff record |
 | Fetch tools denied outside ingestion environments | Untrusted input reaching a session that was not assigned to ingest it | S | Research routed to ingestion sessions | Standard | Setting (the role sets deny fetch tools) | Self-attested: role sets, kickoff record |
 | Egress allow-list | Exfiltration; fetching unreviewed code | S | List upkeep; blocked legitimate fetches | Standard | Boundary | Independent: deny log of a firewall outside the environment |
 | Throwaway data stores per session | Destructive tests corrupting long-lived data | S, C | Seed and teardown scripts | Standard | Boundary | Self-attested: environment definition, seed and teardown scripts |
 | Lab separate from production | A test deployment mistaken for, or wired into, production | S | Extra environments | Standard | Boundary | Independent: separate accounts or networks recorded by the infrastructure provider |
-| Per-environment, least-scope credentials | A leaked credential with wide reach or no revocation path | S | Issuing and revoking per environment | Standard. High: per session | Boundary | Independent: the issuer's records of issue and revocation |
-| Segmented network; ephemeral environments | Lateral movement; drift in long-lived environments | S | Provisioning automation | High | Boundary | Independent: network configuration and provisioning logs outside the agent environments |
+| Per-environment, least-scope credentials | A leaked credential with wide reach or no revocation path | S | Issuing and revoking per environment | Standard, with lab credentials only in the environments of sessions assigned environment authority. High: per session | Boundary | Independent: the issuer's records of issue and revocation |
+| Segmented network; ephemeral environments recreated from an owner-approved definition, with lasting changes only through the definition | Lateral movement; drift in long-lived environments; environment changes that outlive the session that made them | S | Provisioning automation | High | Boundary | Independent (partial): network configuration and provisioning logs outside the agent environments show each environment built from a definition at a recorded revision, and recreated; the host's review record shows that revision was owner-approved. Nothing shows the absence of an in-place change during an environment's life |
 
 Agents run commands faster than anyone can review them line by line. A guard test aimed at the filesystem root, or a cleanup aimed at the wrong target, is an ordinary mistake. Isolation turns it into a lost environment, not a lost workstation. Guards are tested against stubbed copies of the commands they guard. Every change to a lab environment made outside the normal deploy path is preceded by a backup and logged with its exact revert command.
 
@@ -70,18 +71,41 @@ Separating sessions is privilege separation. Sessions differ in authority, and i
 
 - **Permission sets need a boundary behind them.** The orchestrator holds integration branches and carries grants; a worker holds one branch. Under one OS user on one filesystem, a worker can rewrite the orchestrator's settings, hooks or ledger, and a shared `.git` runs the same hooks in every session.
 - **Untrusted input meets the least authority.** Sessions assigned to fetch pages, run research, or triage external issues, advisories or dependency material carry the largest injection surface. A misled session acts with whatever its environment reaches. Every session also reads some untrusted text in installed dependencies, logs and tool output; that surface rests on L3 and on the review of what the session produces.
+- **Environment authority acts before review.** A session that can change its environment, or act on shared or lab resources, does its damage when the command runs, not when its code merges. In a shared environment, the change reaches every session there.
 - **Accidents cross shared boundaries too.** A reused stack name, a filled disk, a shared stash or concurrent operations on one object store affect every session that shares them.
 - **Credential scope and attribution** depend on sessions not reading each other's credentials and identities.
 
 What separation does not buy: it does not protect the product, because a misled session's output still reaches main through integration, where reviews and CI may stop it (method §12, Product code and human review). The orchestrator still reads ingestion output, so injected text that survives into a summary reaches it second-hand; L4 bounds what that text can make it do. It does not help against the model itself. It costs setup, disk, start time, an internal remote and a cross-environment channel.
 
-The boundary therefore follows the two properties that justify it, not the number of sessions. At Standard:
+The boundary therefore follows the properties that justify it: authority, environment authority and input trust, not the number of sessions. At Standard:
 
-- **The orchestrator runs in its own environment.** The owner's checkout stays outside every agent environment (L4). The orchestrator's environment never executes product code and never fetches. Integrated suites and hot-file regeneration run in CI, fetching subagents and research capabilities run in an ingestion environment, and the orchestrator reads their results by commit. Its role set denies fetch tools, and its environment's egress allow-list admits only the model API, the internal remote and the host.
+- **The orchestrator runs in its own environment.** The owner's checkout stays outside every agent environment (L4). The orchestrator's environment never executes product code and never fetches. The orchestrator holds no environment authority: the owner changes its environment through its definition, never from inside it. Integrated suites and hot-file regeneration run in CI, fetching subagents and research capabilities run in an ingestion environment, and the orchestrator reads their results by commit. Its role set denies fetch tools, and its environment's egress allow-list admits only the model API, the internal remote and the host.
 - **Workers of equal authority may share one environment**, with a worktree each and the rules for a shared environment (L2). Equal authority means the same role permission set; tiers do not change it. That role set denies fetch tools. What one worker reaches, all of them reach: this is a recorded Standard residual ([method.md](method.md), §12).
-- **A session assigned to external ingestion or destructive work gets its own environment.** External ingestion means fetch tools, research capabilities, and triage of external issues, advisories or dependency material; reading installed dependencies and the session's own tool output does not count. Destructive work means anything that targets a store other than the session's own throwaway stores, such as lab writes, or tests against a lab target the brief names.
+- **A session assigned external ingestion or environment authority gets its own environment.** External ingestion means fetch tools, research capabilities, and triage of external issues, advisories or dependency material; reading installed dependencies and the session's own tool output does not count. Environment authority is defined below. No session holds both: a tool an ingestion session needs goes into its environment definition through the owner.
 - **Fetch tools are denied to every session not assigned external ingestion.** An egress allow-list alone does not keep them out: some search tools run at the model provider, so their queries and results pass any allow-list. Adding a new dependency is a decision recorded in the slice plan. Reading the source of installed dependencies is not ingestion; it rests on L1 and L3 and is a recorded residual ([method.md](method.md), §12).
 - **Subagents and capability runs count as sessions for this rule.** A fetching subagent or a research capability runs in an ingestion environment, never inside the orchestrator's, and the orchestrator reads its committed output.
+
+**What counts as environment authority.** Environment authority is the mandate for any action that changes what another session, or a later session in the same environment, gets by default, or that acts on a store or resource outside the environment. It is authority in the L4 sense, kept apart in the split because its actions take effect before any repository control sees them. A session that can take such an action (its capability) holds environment authority only when assigned it (its mandate).
+
+- **Not environment authority**, because no default changes:
+  - adding a version alongside others in a content-addressed store, from a pin committed in the repository: package stores and module caches, toolchains a version manager installs from a committed pin file, and tool, browser, compiler and test caches keyed by version or written from committed configuration;
+  - toolchain and package downloads the environment's definition allows; where a sandbox blocks them, the definition provides them;
+  - installs inside the session's worktree or clone: in frozen mode from the lockfile, or, where the approved slice plan adds a dependency, that dependency. Adding a dependency stays a slice-plan decision, and the lockfile change follows the hot-file rule ([method.md](method.md), §4, Plan). This does not make dependency code trusted: install scripts and tests run with the session's authority, and the environment's boundary contains them;
+  - pulling an image a committed file names, and starting and stopping the session's own containers, volumes and networks under its registered project name (L2), stopped before hand-over;
+  - the calls its role needs outside the environment: the model API, registry downloads for these installs and pulls, and its own pushes, slice ledger and messages within its credentials;
+  - diagnosis, and cleanups confined to the session's own processes, containers, worktree and per-session caches.
+- **Environment authority**, because a default changes or the action reaches outside: system packages; anything on the shared `PATH`; user-level or global configuration; a version manager's default; credentials; network and service configuration; pruning a shared cache; pruning or reconfiguring a container runtime, or touching another session's containers; any read or write of a lab store, or of a store shared with other sessions, that is not the session's own throwaway store.
+
+**Container runtimes.** A container runtime counts as root in the environment it reaches, at every profile. At Lite this is a recorded residual ([method.md](method.md), §12); for example, membership of a group that may use a root-owned runtime's socket is root on that machine. From Standard, sessions not assigned environment authority reach only a container runtime that is rootless or confined to a VM serving that session alone, and kickoff confirms it. At High, the runtime inside the session's own VM meets the rule, because that VM is the session's environment.
+
+**How environments change.** Environment changes go through the owner: the orchestrator, or in P1 and P2 the agent session, prepares the change, and the owner approves and applies it. Environment changes are owner chores, batched into one owner visit unless one blocks work ([method.md](method.md), §10). The orchestrator never holds environment authority, and a grant never confers it, at any profile.
+
+- **Lite.** The brief states the rule: no session is assigned environment authority, environment changes go to the owner, and a session lists any environment change it does make in its hand-over note. The agents share the machine or environment, so the owner makes environment changes from the owner's own shell or account, never through an agent session; the Lite residuals cover what that cannot protect ([method.md](method.md), §12).
+- **From Standard, through the definition.** The owner changes the environment definition, a protected path (L5), from the owner's checkout, never from inside an agent environment (L4, Where the owner acts), and the environment is rebuilt from it. A change needed during a run is applied before its vehicle, after the owner has read its diff and the fixed security pass has run on it; it still rides the next vehicle. Sessions move to the rebuilt environment at their next safe point and run the checks in [practice.md](practice.md) (§2). A broken shared environment is recreated from its definition, not repaired in place; its sessions commit at a safe point first.
+- **From Standard, assignment.** The implementation plan lists each lane's environment needs, and names each lane or slice that needs environment authority, with its scope: its own environment, named lab targets, or both. The owner approves it at kickoff as a planned delegation (L4), and the kickoff record lists it. If a run needs it later, the owner changes the environment definition and runs a kickoff for that environment ([practice.md](practice.md), §2). Environment authority belongs to an environment for that environment's lifetime. A session not assigned environment authority never runs in an environment where it was held or used, unless that environment has first been recreated from its definition. The lab credentials of an assigned environment never pass to another session.
+- **The assigned session** changes only its own environment, and acts only on the lab targets its brief names. A change other sessions need goes into the definition. Its changes are recorded in its slice ledger and hand-over note. It holds root in its own environment, so the controls inside it (hooks, the action classifier, local checks) are self-attested there; their proof comes from outside: CI, the owner's review and lab-side records. In P1 and P2, a session whose environment no other session uses already has its own.
+- **From Standard, every other session** is denied environment authority by its environment, a boundary: no root or sudo, system paths read-only, the container-runtime rule above, and image and definition changes applied by the owner. User-level configuration, the home directory and package caches stay writable; that is a recorded Standard residual ([method.md](method.md), §12). Tool rules and hooks that match these actions' command text are an optional setting that can be evaded (L3).
+- **At High,** each session runs in its own VM, recreated from an owner-approved definition. A VM in which environment authority was used is recreated before its next slice. Lasting changes go through the definition.
 
 **Usage and cost.** Each environment authenticates to the model provider with its own least-scope credential. That gives cost attribution per environment, a spend cap, and a smaller blast radius if a key leaks. Usage limits are set by the provider's plan. Where a plan gives separate allowances per account or seat, and its terms allow assigning them to agent environments, environments may use separate ones (optional); check the terms first. Separate API keys within one organisation usually share its limits.
 
@@ -91,7 +115,7 @@ Some credentials cannot be denied, because the session needs them: the model API
 
 - a model key with a spend cap;
 - push credentials limited to the internal remote;
-- lab credentials per environment at Standard; at High, per session and per lab slot;
+- lab credentials per environment at Standard, and only in the environments of sessions assigned environment authority; at High, per session and per lab slot;
 - a PR-opening token with pull-request write only: no push, merge or tag.
 
 All are revoked at teardown. Each one is treated as readable by anything the session runs.
@@ -130,13 +154,13 @@ At Lite, and inside a shared worker environment at Standard, worktrees in one is
 | Control | Prevents | Serves | Cost | Profile | Kept by | Proof |
 |---|---|---|---|---|---|---|
 | Deny push, publish, secret reads | Outward actions by agents; credentials in context | S | Owner performs those actions | Lite | Setting; boundary: no public-host or publish credential in the environment (L1) | Self-attested: permission files, kickoff record |
-| Enforcement material read-only to the session | A session widening its own limits | S | File ownership and placement at setup | Lite | Boundary | Self-attested: kickoff record of refused writes |
+| Enforcement material read-only to the session | A session widening its own limits | S | File ownership and placement at setup | Lite | Boundary; expectation where the session holds environment authority, because it holds root (L1) | Self-attested: kickoff record of refused writes |
 | Enforcing checks fail closed | A crashed or timed-out check letting actions through | S | Error handling in every check | Lite | Setting | Self-attested: check tests, kickoff record |
 | Agent tooling only from an owner-approved list | Unreviewed plugins, tool servers or scripts running in every session | S | List upkeep | Lite. Standard: pinned versions, auto-update off, changes through the protected-path review | Lite: expectation. Standard: setting | Self-attested: the approved list, environment definition |
-| Pre-execution hooks for environment rules | Known rules broken under load | S, C | Writing and testing hooks | Standard | Setting | Self-attested: hooks and their tests |
+| Pre-execution hooks for environment rules | Known rules broken under load | S, C | Writing and testing hooks | Standard | Setting; expectation where the session holds environment authority (L1) | Self-attested: hooks and their tests |
 | Wrapped commands | Risky tools run with unsafe defaults or targets | S, C | Wrapper upkeep | Standard | Setting where the raw command is denied; otherwise expectation | Self-attested: wrappers and their tests |
 | Allow-list only | Any tool use not foreseen for the role | S | Frequent list updates | High | Setting | Self-attested: permission files, kickoff record |
-| Action classifier on side-effecting calls | A permitted tool used outside the task: destructive, exfiltrating or access-acquiring calls the rules allow; actions driven by instructions in fetched content | S | A self-hosted decision engine shared with L6; latency on side-effecting calls; local calibration | High | Setting | Self-attested: calibration records, decision log |
+| Action classifier on side-effecting calls | A permitted tool used outside the task: destructive, exfiltrating or access-acquiring calls the rules allow; actions driven by instructions in fetched content | S | A self-hosted decision engine shared with L6; latency on side-effecting calls; local calibration | High | Setting; expectation where the session holds environment authority (L1) | Self-attested: calibration records, decision log |
 
 ### Enforcement material
 
@@ -208,7 +232,7 @@ Rules decide which tools a role may use. They cannot tell a permitted tool used 
 
 ### Where the owner acts
 
-The owner performs outward actions from a checkout that agents cannot write, after fetching the reviewed ref into it. The owner never acts inside an agent environment. An agent can plant git hooks, git configuration or package scripts in its own checkout, and these would run with the owner's credentials. Committed scripts can do the same, so a publish step runs no repository scripts and publishes, by digest, artefacts built in CI or in an agent environment (L5). The owner also pushes each vehicle branch to the host from this checkout (L5, Who opens the PR). At Lite on a dedicated machine, agents run as the owner's user. That residual is recorded ([method.md](method.md), §12).
+The owner performs outward actions from a checkout that agents cannot write, after fetching the reviewed ref into it. The owner never acts inside an agent environment. For environment changes this holds from Standard; at Lite, where the agents share the machine or environment, the owner makes them from the owner's own shell or account, never through an agent session (L1). An agent can plant git hooks, git configuration or package scripts in its own checkout, and these would run with the owner's credentials. Committed scripts can do the same, so a publish step runs no repository scripts and publishes, by digest, artefacts built in CI or in an agent environment (L5). The owner also pushes each vehicle branch to the host from this checkout (L5, Who opens the PR). At Lite on a dedicated machine, agents run as the owner's user. That residual is recorded ([method.md](method.md), §12).
 
 ### Permission sets must express the delegation
 
@@ -220,7 +244,7 @@ Enforcement reads configuration, not conversation. At kickoff, every planned del
 
 The translation covers the permission rules and, where the tool has one, the allowances of its safety classifier or automatic approval mode. Without it, the tool refuses what the owner delegated. Kickoff exercises each planned delegation once.
 
-Delegations not planned at kickoff go back to the owner, who either performs the action or issues a grant. An agent never works around a refusal. A repeated refusal of the same delegated class is handled as an incident ([method.md](method.md), §11).
+Delegations not planned at kickoff go back to the owner, who either performs the action or issues a grant. Environment authority is never granted (L1). An agent never works around a refusal. A repeated refusal of the same delegated class is handled as an incident ([method.md](method.md), §11).
 
 ### Baseline and grants
 
@@ -232,7 +256,7 @@ Authority is valid only where the owner gives it. The two levels are summarised 
   - the session's own limits.
 
   At High, across environments, the baseline is a signed kickoff manifest. The trust anchor is the owner's public key, provisioned into the environment image at creation; it never arrives over the bus. Every baseline at every level is owner-signed (High) or owner-applied (Standard); at Lite, it is the owner's own settings in the one environment.
-- **Grants.** Grants cover actions beyond the baseline, such as an infrastructure write, a permission exception or a production action. At High, a grant is a signed manifest entry naming scope, receiving session and expiry. The orchestrator may carry it; carrying a signed grant is not relaying. The receiver accepts it only because the signature verifies.
+- **Grants.** Grants cover actions beyond the baseline, such as a permission exception or a production action. A grant never confers environment authority, at any profile; from Standard, it is assigned only as a planned delegation at kickoff, and at Lite to no session (L1). At High, a grant is a signed manifest entry naming scope, receiving session and expiry. The orchestrator may carry it; carrying a signed grant is not relaying. The receiver accepts it only because the signature verifies.
 
 **What can catch misdirection inside the baseline.** A compromised orchestrator or bus can misdirect work inside the baseline. Only controls the orchestrator does not run can catch that:
 
@@ -242,6 +266,14 @@ Authority is valid only where the owner gives it. The two levels are summarised 
 - at High, the external reviewer, the independent verifier and the human reading of high-risk slices.
 
 None of them reads every product change ([method.md](method.md), §12, Product code and human review).
+
+None of them sees an environment action taken during a run either. A misdirected session that changes its environment, or acts on shared or lab resources, does so when the command runs, before any repository control can see it. What bounds that action depends on the profile:
+
+- **Lite:** only the brief. L1 bounds only the environment as a whole, keeping the action off the owner's workstation.
+- **From Standard:** the isolation split, the environment boundary that refuses environment authority to sessions not assigned it, and least-scope credentials (L1). A session that is assigned it can still be steered within its assignment.
+- **Before the call runs:** the L3 rules and hooks, which catch the usual forms, and at High the action classifier with its scope check. In an environment whose session holds environment authority, these are self-attested.
+
+The merge-time controls do not bound it at any profile.
 
 ### Nested delegation
 
@@ -549,7 +581,7 @@ This map lists every control in this reference at the lowest profile that requir
 
 | Layer | Lite | Standard | High |
 |---|---|---|---|
-| L1 | A dedicated development machine or one shared isolated environment; no host or production credentials mounted or forwarded; destructive and adversarial tests only against stubs or throwaway stores | Isolated environments split by authority and input trust (orchestrator; workers of equal authority; each session assigned external ingestion or destructive work); orchestrator environment runs no product code and no fetches; fetch tools denied outside ingestion environments; egress allow-list; throwaway data stores per session; lab separate from production; per-environment least-scope credentials | VM per session; per-session credentials; segmented network; ephemeral environments |
+| L1 | A dedicated development machine or one shared isolated environment; no host or production credentials mounted or forwarded; destructive and adversarial tests only against stubs or throwaway stores; environment changes through the owner, stated in the brief | Isolated environments split by authority, environment authority and input trust (orchestrator; workers of equal authority; each session assigned external ingestion or environment authority, never both); environment authority assigned at kickoff as a planned delegation, and denied to every other session by its environment, including a container runtime that is rootless or confined to a VM serving that session alone; orchestrator environment runs no product code and no fetches; fetch tools denied outside ingestion environments; egress allow-list; throwaway data stores per session; lab separate from production; per-environment least-scope credentials, with lab credentials only where environment authority is assigned | VM per session; per-session credentials; segmented network; ephemeral environments recreated from an owner-approved definition |
 | L2 | Worktree per session; no standing approvals; unique project names and ports plus resource registry where more than one session runs services | Clone per environment, with worktrees inside a shared worker environment; internal git remote as the only shared surface; own runtime and own identity per environment | Per-ref push enforcement; separate OS identity and credentials per session |
 | L3 | Deny push, publish and secret reads; enforcement material read-only to the session; enforcing checks fail closed; agent tooling from an owner-approved list | Hooks for environment rules; wrapped commands; pinned agent tooling with auto-update off and changes through the protected-path review | Allow-list only; action classifier on side-effecting calls |
 | L4 | Owner performs all outward actions from a checkout agents cannot write | Role permission sets; delegation manifest; planned delegations in tool configuration, exercised at kickoff; grants as the owner's answer to the tool's permission prompt | Signed kickoff manifest across environments; owner-signed, instance-bound, time-bound grants verified by the receiver, with closed scopes, on-device signing and owner-only revocation (needs L1 or L2 at High); two-party release rule with the independent verifier for a sole owner |
@@ -575,7 +607,7 @@ The reference flow is being threat-modelled in dethernety, the threat-modelling 
 - **Agent tooling:** agent CLI, plugins, tool servers, hooks, models.
 - **Decision engine:** classifier weights, thresholds and calibration sets.
 - **External services:** model API; package and artefact registries; external web sources.
-- **Data stores:** ledger; slice ledgers; decision register; delegation manifest; kickoff record; throwaway test stores; release-kit state and anchors.
+- **Data stores:** ledger; slice ledgers; decision register; delegation manifest; kickoff record; throwaway test stores; release-kit state and anchors; environment definitions and the images built from them.
 
 **Trust boundaries.**
 
@@ -588,6 +620,7 @@ The reference flow is being threat-modelled in dethernety, the threat-modelling 
 7. Initiative ↔ peers (gateway).
 8. Agent processes ↔ model API.
 9. Agent session ↔ its own enforcement material.
+10. Agent session ↔ its own environment definition and image.
 
 **Data flows.**
 
@@ -627,6 +660,7 @@ The reference flow is being threat-modelled in dethernety, the threat-modelling 
 - misuse of a permitted tool within its allowed scope;
 - classifier evasion, and poisoning of a calibration set;
 - a compromised or confused orchestrator;
+- environment changes, or actions on shared or lab resources, made through misdirection before any repository control sees them;
 - bus spoofing, replay and eavesdropping;
 - cross-session interference through files, ports, stacks or `.git` state, including inside a shared worker environment;
 - agent-controlled code running with the owner's credentials during outward actions, or with release credentials in CI;
@@ -644,6 +678,7 @@ The reference flow is being threat-modelled in dethernety, the threat-modelling 
 **Traceability and deliverables.** Each threat links to the controls that mitigate it, by layer and profile. Examples:
 
 - **Prompt injection:** L1 isolation, including separate ingestion environments and an orchestrator that never fetches; L3 tool control; the L3 action classifier and the L6 decision classifier at High; the L6 deterministic checks and references-only rule; and the L7 review of deliverables.
+- **Misdirected environment changes:** environment changes through the owner, the isolation split, environment authority only by assignment and least-scope credentials, with lab credentials only where it is assigned (L1); the owner's assignment as a planned delegation (L4) and the kickoff refusal test; at High, recreation from an owner-approved definition (L1). The L3 rules and hooks, and at High the action classifier, see the call before it runs, but are self-attested where the session holds environment authority. The merge-time controls (L4, L5, L7) do not see them. At Lite, only the brief stands ([method.md](method.md), §12).
 - **Misuse of a permitted tool:** closed action classes and the approved slice plan for scope (L3, L4), and the L3 action classifier at High.
 - **Grant replay:** instance binding and expiry (L4).
 - **Revocation suppression:** the owner-only revocation location and fail-closed reads (L4).
