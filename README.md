@@ -4,7 +4,7 @@ A tool-agnostic reference method for governing teams of AI agents that build pro
 
 The method is designed around three properties at once: **secure**, **correct** and **efficient**. Efficiency never overrides the other two. It is not a security guide: it describes how to organise, run and control agent teams, with security as one property among three.
 
-**Status:** v0.8.1 draft, 2026-10-22. Corrections, questions and adoption reports are
+**Status:** v0.8.2 draft, 2026-10-26. Corrections, questions and adoption reports are
 welcome as [issues](https://github.com/levente-simon/governed-semi-autonomous-development/issues).
 
 ## Documents
@@ -16,7 +16,7 @@ welcome as [issues](https://github.com/levente-simon/governed-semi-autonomous-de
 | [glossary.md](glossary.md) | Every reader | The terms used across the documents, in alphabetical order |
 | [control-reference.md](control-reference.md) | Security and platform teams implementing it | Every control per layer (what it prevents, what it serves, its cost, its profile, what keeps it, its proof and whether that proof is independent), the delegation and signing model, out-of-band CI, the message bus, the action and decision classifiers, the release kit, a threat-model plan, the control-to-profile map |
 | [claude-code-reference.md](claude-code-reference.md) | Teams implementing it on Claude Code | How roles, layers, patterns and rituals map to Claude Code features, with the documented caveats; templates; the planned operator's handbook |
-| [related-work.md](related-work.md) | Readers placing this against published work | The bodies of work this method is built out of, why they do not simply apply to this setting, and what the method is. No novelty claim |
+| [related-work.md](related-work.md) | Readers placing this against published work | A comparison with current frameworks and published work, the bodies of work this method is built out of, why they do not simply apply to this setting, and what the method is. No novelty claim |
 
 Start with [method.md](method.md), and keep [glossary.md](glossary.md) at hand. Read [practice.md](practice.md) when you run a team. The others go deeper on demand.
 

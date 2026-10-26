@@ -4,6 +4,67 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.8.2 -- 2026-10-26
+
+Added
+
+- `related-work.md` opens with a comparison in two tables. The first compares positioning, level
+  and form; the second compares authority over outward actions, enforcement, isolation,
+  verification and continuity. Works enter by a stated rule: a public primary source, about AI
+  coding agents, widely used or cited, that governs or structures how coding agents work. The
+  works kept outside the rule, and the rows that summarise the sections below, are named.
+- A "Session workflow frameworks" section in `related-work.md` describes GSD Core, GitHub Spec
+  Kit, the BMAD Method, pstack and Superpowers, and names OpenSpec and Kiro specs. pstack is
+  credited with structures this method also uses: a coordinator over workers, a ledger and
+  decision log, standing orders re-injected on every spawn and resume, and a verifier on a
+  different model family. Its difference on authority is stated: external actions such as team
+  chat proceed without asking, and an autopilot playbook can merge; irreversible writes always
+  wait for the user. Superpowers is linked to this method's fourth and seventh principles. The
+  section states that this method specifies the controls around a team and leaves the in-session
+  workflow open, and how such a framework is governed when a worker runs it inside a slice: as
+  agent tooling, with its hooks and instruction files as protected paths and its hooks as
+  enforcement material, without changing the session's denied permissions.
+- Works cited: GSD Core and the archived GSD repository, GitHub Spec Kit, the BMAD Method, pstack,
+  Superpowers, OpenSpec and the Kiro specs documentation. The CrewAI entry adds Flows, and the
+  Cruz entry records that it read v0.7.
+
+Changed
+
+- `related-work.md`: the four-column summary table (governs, unit of control, evidence basis) is
+  replaced by the two comparison tables.
+- README: the related-work row of the documents table mentions the comparison.
+
+Fixed
+
+- GAIE: its principle that the generating agent cannot approve its own deployment corresponds to
+  this method's first principle, the owner holding every merge and release at every profile, not
+  to the two-party rule, which applies at High alone.
+- GAIE: "uncertainty escalates upward and never downward" is described as GAIE's own principle,
+  not as a position this method holds; the method does not state it.
+- GAIE: its routing uses a confidence score against a threshold and a dependency-graph check, in
+  addition to the four risk dimensions the paper frames.
+- Madatha: "enforcement material protected from the session it governs" is no longer listed among
+  its positions. Its integrity checks re-hash agent definitions at install time and detect
+  accidental or automated tampering through a keyed lockfile; the paper notes that a same-user
+  process could forge the lockfile stamp.
+- Madatha: it names bounded delegation depth as a mitigation but describes no mechanism, rather
+  than addressing no nested delegation at all.
+- Madatha: it governs agent definitions across an organisation's repositories and seven IDE
+  targets, with runtime enforcement by hooks in two harnesses, not one harness on one machine.
+- Madatha: it is credited with the positions it reached, without a statement that it reached them
+  first, in line with the document's no-priority stance.
+- CrewAI: the feature list includes the Flows human-feedback decorator for approval gates and
+  review points; the conclusion that it is not an owner authority over outward actions stands.
+- CrewAI and MetaGPT: the orchestration-frameworks bullet says neither measures the owner's
+  interrupts and waiting time during a run, and that MetaGPT measures the human revisions its
+  output needs afterwards, rather than that neither carries any measure of human cost.
+- CASE: the text includes its three studies on public data (62 incidents, 22 tools,
+  35 deployments) and that the pipeline coding that data is MIT-licensed.
+- Cruz: the body uses "corresponds to" for the article's proposals and carries no version of this
+  method; the version read moves to the Works cited entry.
+
+No change to any principle, role, control, profile or metric.
+
 ## v0.8.1 -- 2026-10-22
 
 Changed

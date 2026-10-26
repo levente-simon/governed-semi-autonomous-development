@@ -1,20 +1,59 @@
 # Related work
 
-*How this method relates to published work, and where it differs. Current as of 22 October 2026.
+*How this method relates to published work, and where it differs. Current as of 26 October 2026.
 Terms are defined in [glossary.md](glossary.md). Corrections and additions are welcome as issues.*
 
 This document exists to place the method, not to stake a claim. It makes no novelty claim and
 no priority claim: a reference method does not need to be first. The method is offered as a way
 to do the work, and the literature below shows what it is built out of.
 
-| Work | Governs | Unit of control | Evidence basis |
+## Comparison
+
+The two tables place this method against the work discussed below. Works enter by one rule: a
+public primary source, about AI coding agents, widely used or cited, that governs or structures
+how coding agents work. Works this document already discusses keep their rows where they fall
+outside the rule: the MAS organizational models, capability security, CrewAI and CASE are not
+specific to coding agents, and GAIE, Madatha and the harness-engineering study are 2026 papers
+whose use and citation were not assessed. pstack is included as an official Cursor plugin; its use
+was not measured. The first table compares positioning, level and form. The second compares
+authority over outward actions, enforcement, isolation, verification and continuity; it leaves out
+the MAS organizational models, capability security and harness engineering. Positioning cells
+paraphrase each work's own description of itself, or for a body of work its literature; the other
+cells describe mechanisms. Every cell describes what the work states, and "not stated" means the
+sources read do not say. The sources for the frameworks, the papers and CrewAI were read on 26
+October 2026; the rows for the MAS organizational models, capability security and harness
+engineering summarise the sections below.
+
+| Work | Positioning | Level | Form |
 |---|---|---|---|
-| **MAS organizational models** (Gaia 2000 and 2003; MOISE 2000; MOISE+ 2002) | The organization as an explicit, specified object | Roles, groups, links, role cardinality | Two decades of academic use |
-| **Capability security** (confused deputy 1988; macaroons 2014; RFC 8693) | What a credential permits and who may narrow it | The credential | Deployed infrastructure |
-| **Harness engineering** (2026) | How the mechanisms around a model are configured | Context files, rules, hooks, tool servers | Repository mining |
-| **GAIE / OCM** (Kang 2026) | Whether a human reviews a given change | The individual code generation task | Analytical; no production data |
-| **Deterministic control plane** (Madatha 2026) | Permissions, integrity and phase gates in a coding harness | Tools, paths, commands, phases | Conformance tests on injected violations |
-| **This method** | How one owner runs agent teams on a product | The control layer, chosen per layer | One product, open-sourced in February 2026 and released continuously since |
+| **MAS organizational models** (Gaia 2000 and 2003; MOISE 2000; MOISE+ 2002) | Agent systems as organizations of roles, specified explicitly | The organization: roles, groups, links, role cardinality | Methodologies and specification languages |
+| **Capability security** (confused deputy 1988; macaroons 2014; RFC 8693) | Authority carried by credentials and narrowed on delegation | A credential and its delegation chain | Papers, RFCs and Internet-Drafts, with deployed implementations |
+| **Harness engineering** (2026) | How coding tools are configured in practice | The harness around one model | An exploratory study |
+| **GSD Core** (v1.18.0) | Meta-prompting, context engineering and spec-driven development system | One project as milestones and phases, from one orchestrating session | Installable prompts and hooks for many agent tools |
+| **GitHub Spec Kit** (v1.2.3) | Structured processes, templates and documented outcomes for coding agents | One feature, under a project constitution | Python CLI installing per-agent commands, extensions and workflows |
+| **BMAD Method** (v6.12.4) | Idea to working software without giving up the thinking | One change per session; larger work as tracked stories | Installable skills and agent personas |
+| **pstack** (0.15.32) | The author's daily skills for writing less, higher-quality code | One session, up to a coordinator over subagent fleets | Cursor plugin; generated copy for Claude Code |
+| **Superpowers** (7.0.1) | A software development methodology for coding agents, as composable skills | One feature, from design to finished branch, in one session | Skills plugin with a session-start hook, for many harnesses |
+| **GAIE / OCM** (Kang 2026) | Graduated human oversight for code generation in regulated domains | A single code generation task | Framework paper with a reference architecture |
+| **Deterministic control plane** (Madatha 2026) | A deterministic control plane above the coding harness | An organisation's agent definitions and harness configuration | Node.js tool: CLI and tool server, seven IDE targets |
+| **CrewAI** | Open-source framework for orchestrating autonomous AI agents | A crew of agents inside an event-driven flow | Open-source framework run in the developer's process |
+| **MetaGPT** (Hong et al. 2024) | Multi-agent framework encoding human workflows as standard procedures | A team of software roles on one task | Open-source Python framework, MIT |
+| **CASE** (Telukunta et al. 2026) | Control architecture for governing enterprise agentic AI | Organisation: agent, collective, human-agent team, fleet | Paper: reference architecture, maturity model, assessment instrument |
+| **This method** | Tool-agnostic reference method for governing agent teams that build production software | An agent team on one product, under one owner or a small owner team | A method: documents, with a Claude Code reference mapping |
+
+| Work | Authority over outward actions | Enforcement | Isolation | Verification | Continuity |
+|---|---|---|---|---|---|
+| **GSD Core** | Not stated; interactive mode confirms each step, "yolo" auto-approves | Prompts; blocking hooks on some runtimes; advisory injection hooks | Worktree per parallel executor; no sandbox, by stated design | Plan checker, verifier subagent, human acceptance testing | `.planning/` state files; fresh-context executors; context-fill warnings |
+| **GitHub Spec Kit** | Not stated; human reviews each step and approves workflow gates | Prompts and templates; workflow engine and scripts outside the model | None in core; shell steps run with the user's privileges | Consistency and convergence commands in the session; human per step | Constitution and per-feature spec files; resumable workflow runs |
+| **BMAD Method** | User approves flagged plans; unattended worker commits locally, does not push | Skills and step files; scripts for state; no core hooks described | Not stated; unattended worker needs a clean working tree | Three reviewer layers by default; repair loop halts after five rounds; human retrospective | Spec file status as state; tracking files; fresh chat per workflow |
+| **pstack** | Reversible work and external actions such as team chat proceed; always pauses for irreversible writes such as deploys and force-pushes | Prompts and playbooks; bookkeeping scripts; no hooks | Cloud environment or worktree per worker; one writer per branch | Verifier on another model family for costly units; verdicts keyed to the head commit | Standing orders re-injected on every spawn and resume; ledger files |
+| **Superpowers** | Stops before merge, shared push or publish; user decides integration | Prompts; a session-start hook that injects rules and does not block | Git worktree with consent; per-plan scratch directory | Test-first; fresh reviewer per task in subagent mode; capped fix loop; final review | Per-plan ledger; rules re-injected after compaction; committed design docs; plan files |
+| **GAIE / OCM** | Human deploy approval in Tiers 1 and 2; Tier 3 auto-deploys on gates | Rule engine and CI approval gate, at architecture level | Sandboxed execution named, not detailed | Evidence per tier; generator cannot approve its own deployment | Append-only, hash-chained provenance; context loss not stated |
+| **Deterministic control plane** | Human gates at spec, design, pre-release and merge | Errors at install time; blocklist hooks in two harnesses | None; states it is not building a sandbox | Human gates, delegation receipts, scan-diff security gate | Persisted phase state; hash-chained local audit log |
+| **CrewAI** | Set in developer code; Flows offer human-feedback gates | Framework parameters and task guardrails in developer code | Docker execution deprecated; external sandbox services recommended | Manager evaluates; guardrails; optional human review of final answer | Context summarising, stored memory, persisted flow state |
+| **MetaGPT** | Humans initiate, observe and stop runs | Procedures as prompt sequences; structured outputs | Not stated | Engineer runs unit tests, up to three retries; no human gate described | Shared message pool; agent memory |
+| **CASE** | Approval gates for high-consequence action classes; role-bound override rights | Gateway budget caps, per-call credential checks, policy-as-code gates | Per-agent workload identity, budget cells; no sandbox specified | Rubric judge, human escalation packets, evals in CI | Provenance-tagged shared memory; signed decision chains |
+| **This method** | Owner holds every merge, release and outward action, at every profile | Per control: expectation, setting or boundary, chosen by profile | By profile: a dedicated machine or one isolated environment, worktree per session; containers or VMs split by authority; VM per session | Fresh-context review; host-enforced CI out of band; human reading of protected paths, and of high-risk slices at High | Ledger on its own git ref; sessions rebuild from it |
 
 ## Multi-agent organizational models
 
@@ -134,11 +173,13 @@ than about priority.
   delegation is a tool the manager calls rather than a credential the receiver checks. That gap
   is where the agent setting differs, and the IETF agent-token drafts indicate others are closing
   it.
-- **The orchestration frameworks structure work without governing authority.** CrewAI and
-  MetaGPT establish roles, managers and document hand-off, and CrewAI offers human review of a
-  task's output and guardrails. Neither carries a human owner who holds irreversible outward
-  actions as a separate authority, an assurance profile scaled to risk, or any measure of what
-  the arrangement costs the human in the loop.
+- **The orchestration frameworks structure work without governing authority.** CrewAI and MetaGPT
+  establish roles, managers and document hand-off. CrewAI offers human review of a task's output,
+  guardrails, and in Flows a human-feedback decorator for approval gates and review points. These
+  are steps the developer's code places in a flow. Neither framework carries a human owner who
+  holds irreversible outward actions as a separate authority, an assurance profile scaled to risk,
+  or a measure of the owner's interrupts and waiting time during a run; MetaGPT measures the human
+  revisions its output needs afterwards.
 
 None of that makes this method novel. It means the known properties have to be assembled for a
 setting their originators were not addressing, and that assembly is what the method is.
@@ -158,18 +199,145 @@ harness changes -- longer effective context, non-compactable pinned context, or 
 rule set per turn. Whether those are sufficient is an open question. They should not be excluded
 by classification.
 
+## Session workflow frameworks
+
+A second family of shipped work structures how coding agents work inside a session or a project:
+what they plan, when they stop, how they check their output and what they record for the next
+session.
+
+### GSD Core
+
+GSD Core describes itself as a meta-prompting, context engineering and spec-driven development
+system for many coding agents. It addresses context rot: heavy work runs in fresh-context
+subagents, and the main session acts as a thin orchestrator that never touches source files. A
+project runs as milestones of phases, and state lives in a `.planning/` directory that agents read
+instead of relying on memory. Most rules are prompts. On some runtimes, hooks block an executor
+dispatched without worktree isolation, writes outside the worktree and reads of secret files; its
+prompt-injection hooks advise unless blocking is turned on. The project states that there is no
+sandbox, and that consent, integrity and reversibility are the barrier.
+
+Two mechanisms are of note. Each blocking hook replaced a prose rule after an observed failure,
+and its header records the incident that the prose rule failed to prevent; method.md §1, principle
+6 and §11 describe the same move from rule to mechanism. A context-monitor hook warns at 35% of
+context remaining and asks for a stop and a state save at 25%; the project calls it advisory. The
+original GSD repository is archived and points to GSD Core.
+
+### GitHub Spec Kit
+
+Spec Kit is a toolkit that gives coding agents structured processes, templates and documented
+outcomes, and it calls its goals experimental. A project has one constitution, and each feature
+gets its own spec, plan and tasks. The user runs each command and reviews its result before the
+next. Most enforcement is prompt and template: the plan template checks the constitution through
+gates, and a failed gate must be justified in writing. Two parts run outside the model. A workflow
+engine runs approval gates that abort on rejection, shell steps and agent steps, and keeps run
+state. Extension events are translated into each agent's own hook configuration and run scripts
+directly. The project states: "There is no capability sandbox".
+
+Of note: checklist marks belong to the reviewer, and the implement command treats them as a
+read-only gate. A convergence command compares the implementation with the spec and may append
+tasks but not edit code.
+
+### BMAD Method
+
+BMAD aims to "turn an idea or change request into working software without giving up the thinking"
+(its README). This section describes the stable v6.12 line. A typical session is one goal of about
+500 lines of code. Before code, the build skill reports intent gaps, irreversible actions and
+footprint. Anything flagged gets a written plan that the user approves, and the approved intent
+block can then be changed by the human alone. Larger work becomes tracked stories, built one per
+invocation by an unattended worker that commits locally and does not push; a human or an outside
+orchestrator owns dispatch. Enforcement is skills, personas and step files, with scripts for
+state; no hooks are described for core BMAD. Review runs three reviewer layers by default, on
+models as capable as the session's, and the repair loop halts for a human after five rounds.
+
+Of note: a review finding rooted in the approved intent reverts the code and returns the question
+to the human, while a finding rooted elsewhere amends the spec with a logged change. A v7 preview
+on the default branch differs: a Product Owner agent slices work into a ticket tree, and the
+unattended worker never marks a ticket done.
+
+### pstack
+
+pstack is a Cursor plugin, also installable in Claude Code. Its README presents it as the author's
+everyday skills for shipping code at Cursor, meant to help you write less, higher-quality code. A
+router matches each task to one of 23 playbooks. Enforcement is prompt-level, with bookkeeping
+scripts and no hooks. It prefers lessons encoded as a lint, a runtime check or a script over more
+text, the move method.md §1, principle 6 also makes.
+
+Its `orchestrate` playbook reached several structures this method also uses, and should be
+credited with them. A coordinator runs tracks of workers, one writer per worktree or branch. A
+ledger and a decision log are kept as files. A standing-orders file is pasted verbatim into every
+spawn and every resume, because "Directives decay across resumes" (orchestrate playbook). For
+costly or high-blast-radius units, a verifier on a different model family from the worker records
+a verdict keyed to the head commit, and a new head voids it. These correspond to this method's
+orchestrator and ledger, its limits re-injected from the ledger (method.md §1, principle 7;
+practice.md §7), and its fresh-context verification. Similar structures in two practices are a
+signal that they are reachable, not evidence that they work.
+
+One difference concerns authority. pstack's default lets reversible work and external actions,
+such as team chat, ticket updates and starting evals, proceed without asking. It always pauses for
+irreversible writes, among them deploys, force-pushes to shared branches, data deletion and
+customer messages. The user can grant fuller autonomy in the prompt. Under that grant, the agent
+applies and reports a default for calls only the user can make, and "Gates the operator named and
+the Always-pause list in Autonomy still need the operator" (poteto-mode skill). On request, an
+autopilot playbook carries each pull request through merge after a verifier pass. This method
+holds every outward-facing action with the owner, merges and external communication included
+(method.md §1, principle 1).
+
+### Superpowers
+
+Superpowers describes itself as a software development methodology for coding agents, built from
+composable skills. It takes a feature from a design the human approves, through a plan of small
+tasks, to a finished branch, in one session that dispatches subagents. Enforcement is
+prompt-level: skills are written as mandatory, with tables that rebut common rationalisations. One
+session-start hook injects the skill rules at startup, after a clear and after compaction; it does
+not block. Work runs in a git worktree created with consent. In subagent-driven execution, each
+task gets a fresh reviewer that treats the implementer's report as unverified, and a fix loop
+capped at five rounds; inline execution keeps one fresh review of the whole branch. During
+execution the agent does not check in: it decides conflicts and ambiguities itself, records each
+as a ruling and reports every ruling at the end. It stops for irreversible or security-sensitive
+actions and for side effects outside the worktree, such as a merge, a shared push or a publish.
+The integration decision stays with the user.
+
+Of note: skills are written test-first. A pressure scenario runs on a subagent without the skill,
+and the skill is written until the agent complies. Its philosophy lists "Evidence over claims",
+and a completion claim needs fresh verification evidence, as in this method's fourth principle.
+After compaction the agent trusts the per-plan ledger rather than memory, as in the seventh
+(method.md §1).
+
+### Further spec-driven work
+
+OpenSpec and Kiro specs are further spec-driven work. OpenSpec keeps each change as a folder of
+proposal, spec deltas, design and tasks, which its CLI validates. Kiro gives each feature spec
+requirements, design and tasks files, with a bugfix file in place of requirements for a bugfix
+spec, and its hooks can block a tool call until preconditions hold.
+
+### How these relate to this method
+
+These frameworks structure how one agent or one coordinator plans, checks and records work, and
+several also set stop points, worktrees and verifiers. This method specifies the controls around a
+team: who holds outward actions, how environments are separated by authority, and which
+verification runs outside every agent environment. It leaves the in-session workflow open. A
+worker in this method could run one of them inside its slice. The framework's plugins, skills,
+subagent definitions and hooks are then agent tooling: from an owner-approved list, and from
+Standard pinned with auto-update off and changed through the protected-path review
+(control-reference.md, L3). Its instruction files that steer every session reach the owner as the
+diff from Lite, and its hooks from Standard; hooks and hook scripts are also enforcement material,
+read-only to the worker's session (control-reference.md, L3 and L5). A framework's text that lets
+an agent act outward does not change the session's denied permissions (control-reference.md, L3).
+
 ## Graduated human oversight: GAIE
 
 Kang's *Governed AI-Assisted Engineering* ([arXiv:2606.22484](https://arxiv.org/abs/2606.22484),
 June 2026) routes each code generation task to human-in-the-loop, human-over-the-loop or
-automated-with-monitoring, from four inputs: regulatory impact, customer proximity,
-reversibility and data sensitivity. Each tier names its required evidence, held append-only
-with a hash chain.
+automated-with-monitoring. The paper frames the routing around four risk dimensions: regulatory
+impact, customer proximity, reversibility and data sensitivity. Its decision function also takes a
+confidence score against a threshold, and checks for a dependency-graph path to a strategic
+function. Each tier names its required evidence, held append-only with a hash chain. GAIE also
+states that uncertain classification escalates to a higher oversight tier, never a lower one.
 
 GAIE reached positions this method holds, and should be credited with them: that oversight must
-be scaled to risk rather than applied uniformly, that uncertainty escalates upward and never
-downward, and that the agent generating code cannot approve its own deployment, which is this
-method's two-party rule.
+be scaled to risk rather than applied uniformly, and that the agent generating code cannot approve
+its own deployment. In this method the second corresponds to the first principle: the owner holds
+every merge and release, at every profile (method.md §1, principle 1).
 
 GAIE's tiering is the closest prior formulation of risk-tiered escalation for code generation;
 risk-proportionate human oversight as such predates it. This method composes it across multiple
@@ -192,18 +360,24 @@ write-path validation, an attack-derived shell blocklist runs on pre-tool-use ho
 harnesses, and git configuration and hook manipulation are forbidden by prompt rules backed by
 blocklist patterns.
 
-It arrived first at several positions this method holds: enforcement in code rather than in
-agent compliance, fail-closed permission sets per role, enforcement material protected from the
-session it governs, and mechanisms tested by injecting what they must reject.
+Madatha reached several positions this method holds, and should be credited with them: enforcement
+in code rather than in agent compliance, fail-closed permission sets per role, and mechanisms
+tested by injecting what they must reject. Its integrity checks re-hash agent definitions at
+install time and detect accidental or automated tampering through a keyed lockfile; the paper
+notes that a process running as the same user could forge the lockfile stamp.
 
 **More than enforcement.** The paper includes a phase state machine with named delegation
 receipts, human-in-the-loop gates after specific phases, and a capped escalation to a human after
 three failed auto-fix iterations by default. A gated phase machine with delegation records and
 human escalation points is an authority structure, not only an enforcement primitive.
 
-What remains different is scope rather than category: it governs one harness on one machine,
-states that it is not building a sandbox, and addresses no environment isolation, nested
-delegation or approval routing. Its phase-gate overhead is explicitly unmeasured.
+What remains different is scope rather than category. It governs agent definitions and harness
+configuration across an organisation's repositories, compiled to seven IDE targets. Its runtime
+enforcement is pre-tool-use hooks in two of them, Claude Code and Cursor; the other targets get
+compile- and install-time checks only. It states that it is not building a sandbox, addresses no
+environment isolation, and describes no path for widening an agent's tier. It names bounded
+delegation depth as a mitigation but describes no mechanism for it. Its phase-gate overhead is
+explicitly unmeasured.
 
 **On its prevalence study.** The sub-1% permission-declaration figure is labelled indicative in
 the paper, produced by a fragile parser, with n=31 true positives of 6,145 files, and is not
@@ -223,7 +397,9 @@ maturity model and an assessment instrument. Its third layer applies supervisory
 human-agent teams: tiered autonomy, federated oversight loops and role-bound override rights. It
 is the nearest recent treatment of how humans supervise agent teams, though not of team
 structure, which the organizational models above treat more directly. It governs enterprise
-agent operations generally rather than software delivery; coding agents are not addressed.
+agent operations generally rather than software delivery; coding agents are not addressed. It
+reports three studies on public data: 62 incidents, 22 agent-operations tools and 35 enterprise
+deployments. The pipeline that coded the data for those studies is released under the MIT licence.
 
 ## Environment isolation
 
@@ -322,7 +498,7 @@ organisation. The method maps no clauses and offers no crosswalk.
 
 ## A practitioner's reading
 
-Cruz (2026) read v0.7 of this method against a newsroom run by agents. It is one practitioner's
+Cruz (2026) read this method against a newsroom run by agents. It is one practitioner's
 self-assessment of his own setting against the method, not an audit, and its evidence is that one
 setting.
 
@@ -339,12 +515,12 @@ sense of what it can do, distinct from the capability library and from capabilit
 token of authority, because a grant here is an owner-issued widening of authority.
 
 The article makes four other proposals. The method responds to two. Memory loss as a design input
-became principle 7: limits are re-read from durable artefacts and re-checked, and the restated
-limits are re-injected at intervals, modelled on the article's own status reports. Encrypted
-transport became an end-to-end encrypted message option at High; the article also proposes
-encrypted state, which the method does not adopt. Its proposal to govern agents inside the
-product is recorded as out of scope (method.md §0). Its offer of measured owner metrics, as a second
-evidence base, is not yet taken up.
+corresponds to principle 7: limits are re-read from durable artefacts and re-checked, and the
+restated limits are re-injected at intervals, modelled on the article's own status reports.
+Encrypted transport corresponds to the end-to-end encrypted message option at High; the article
+also proposes encrypted state, which the method does not adopt. Its proposal to govern agents
+inside the product is recorded as out of scope (method.md §0). Its offer of measured owner
+metrics, as a second evidence base, is not taken up.
 
 The reading also found its own CI to be in-band: the agent that pushes can change the checks
 that gate it, in the same push. That is the case the out-of-band CI rule addresses (control
@@ -404,13 +580,30 @@ places where it fails.
 - Graicunas, V. A. (1933). *Relationship in Organization*. Bulletin of the International
   Management Institute. Urwick, L. (1956). *The Manager's Span of Control*. Harvard Business
   Review.
-- CrewAI documentation: Processes, Hierarchical Process, Collaboration, Agents, Tasks. docs.crewai.com,
-  accessed 21 October 2026.
+- CrewAI documentation: Processes, Hierarchical Process, Collaboration, Agents, Tasks, Flows.
+  docs.crewai.com, accessed 26 October 2026.
 - Hong, S., et al. (2024). *MetaGPT: Meta Programming for A Multi-Agent Collaborative
   Framework*. ICLR 2024. arXiv:2308.00352.
 - Galster, M., Mohsenimofidi, S., Lulla, J. L., Abubakar, M. A., Treude, C., & Baltes, S.
   (2026). *Harness Engineering for Agentic AI Coding Tools: An Exploratory Study*.
   arXiv:2602.14690 [cs.SE]. Based on a paper in the Proceedings of AIware 2026.
+- Open GSD. *GSD Core*. Software, v1.18.0, branch `next`. https://github.com/open-gsd/gsd-core,
+  accessed 26 October 2026.
+- TÂCHES. *Get Shit Done*. Software, archived repository that points to GSD Core.
+  https://github.com/gsd-build/get-shit-done, accessed 26 October 2026.
+- GitHub. *Spec Kit*. Software, branch `main` (release v1.2.3).
+  https://github.com/github/spec-kit, accessed 26 October 2026.
+- bmad-code-org. *BMAD Method*. Software, v6.12.4 (stable line; a v7 preview is on the default
+  branch). https://github.com/bmad-code-org/BMAD-METHOD/tree/v6.12.4, accessed 26 October 2026.
+- Tan, L. *pstack*. Cursor plugin, v0.15.32, MIT. In *cursor/plugins*, folder `pstack/`.
+  https://github.com/cursor/plugins/tree/main/pstack, accessed 26 October 2026.
+- Vincent, J., and Prime Radiant. *Superpowers*. Software, v7.0.1, MIT.
+  https://github.com/obra/superpowers, accessed 26 October 2026. Announced in *Superpowers: How
+  I'm using coding agents in October 2025*, blog.fsck.com, 9 October 2025.
+- Fission AI. *OpenSpec*. Software, branch `main` at commit 6d04a1b (latest release v1.15.0).
+  https://github.com/Fission-AI/OpenSpec, accessed 26 October 2026.
+- Kiro documentation: Specs, Feature Specs, Correctness, Hooks. https://kiro.dev/docs/specs/,
+  accessed 26 October 2026.
 - Kang, R. (2026). *Governed AI-Assisted Engineering: Graduated Human Oversight for Agentic Code
   Generation in Regulated Domains*. arXiv:2606.22484 [cs.HC].
 - Madatha, P. (2026). *A Deterministic Control Plane for LLM Coding Agents*. arXiv:2606.26924 [cs.SE].
@@ -437,9 +630,9 @@ places where it fails.
 - NandhaKishorM. *Laya*. Software, Apache-2.0. https://github.com/NandhaKishorM/laya
 - Cruz, D. (2026). *Governed semi-autonomous development, read in a newsroom run by agents: where
   Levente Simon's method and our work arrived at the same ideas, how we measure up to it, and what
-  we would add*. newsroom.sgit.ai, 21 October 2026.
-  https://newsroom.sgit.ai/articles/governed-semi-autonomous-development-read-here.html,
-  accessed 22 October 2026.
+  we would add*. newsroom.sgit.ai, 21 October 2026. Read at v0.7 of this method.
+  https://newsroom.sgit.ai/articles/governed-semi-autonomous-development-read-here.html, accessed
+  22 October 2026.
 - NIST (2022). *Secure Software Development Framework (SSDF) Version 1.1: Recommendations for
   Mitigating the Risk of Software Vulnerabilities*. SP 800-218.
 - OpenSSF. *Supply-chain Levels for Software Artifacts (SLSA)*. slsa.dev.
