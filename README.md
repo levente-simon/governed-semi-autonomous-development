@@ -4,7 +4,7 @@ A tool-agnostic reference method for governing teams of AI agents that build pro
 
 The method is designed around three properties at once: **secure**, **correct** and **efficient**. Efficiency never overrides the other two. It is not a security guide: it describes how to organise, run and control agent teams, with security as one property among three.
 
-**Status:** v0.10 draft, 2026-10-26. Corrections, questions and adoption reports are
+**Status:** v0.10.1 draft, 2026-10-27. Corrections, questions and adoption reports are
 welcome as [issues](https://github.com/levente-simon/governed-semi-autonomous-development/issues).
 
 ## Documents

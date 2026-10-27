@@ -4,6 +4,53 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.10.1 -- 2026-10-27
+
+Added
+
+- `related-work.md` opens with a short summary: most parts of the method exist in prior work, that
+  work does not address the setting, and the method assembles the parts for an agent team building
+  production software under one owner or a small owner team. It says who reads what (adopters can
+  go straight to `method.md` and `practice.md`; the rest is the evidence, for reviewers), links the
+  sections of the arc, and gives a key to L1-L8, the profiles and the principle numbers.
+- Paperclip, an open-source orchestration server for agent teams, in both comparison tables, in
+  the agent orchestration frameworks section and with its own bullet in the conclusion. Its
+  governance is credited: board approvals, budget caps that pause an agent, run-scoped agent
+  tokens, a responsible user bounding every agent write, configuration revisions with rollback and
+  versioned skills. Where it differs is stated: actions run unless held, "Always allow" saves a
+  standing rule, shell git and gh are left to host branch protection, instruction and skill changes
+  take effect before review, and isolation is opt-in. It is not specific to coding agents; it is
+  included because it runs coding agents such as Claude Code and Codex and is widely used.
+- A short note on self-improving harnesses under harness engineering. It reports a practitioner's
+  feedback (NOOA as a possible better fit than Claude Code; Prime Agent and Harness² as
+  incompatible), credits what each provides, and states how the existing rules apply: agent
+  instruction files in the repository reach the owner as the diff (L5), skills are agent tooling
+  from an owner-approved list, and enforcement material stays read-only to the session (L3).
+  Memories a tool keeps for itself are recorded as an open question. RegenHarness is described as
+  an updater that cannot weaken its own acceptance gate; its paper does not state who authorizes a
+  release.
+- Works cited entries for Paperclip, NOOA, Prime Agent, Harness² and RegenHarness.
+
+Changed
+
+- `related-work.md` follows one arc: comparison; organizing agents; authority and enforcement;
+  isolation, evidence and standards; a practitioner's reading; and one conclusion that merges "Why
+  the prior art does not simply apply" and "What this method is". Each group opens with a lead-in
+  on what it shows, the table rows and Works cited follow the same groups, and the comparison
+  intro gives the reading guide before the inclusion rule. No claim is removed.
+- Every Works cited entry with a stable address is a link (Graicunas 1933 and Urwick 1956 have
+  none), the body links works at their first mention, arXiv IDs and RFC numbers are
+  links, and internal references link to their sections. MAS, OCM, SPKI/SDSI and AUROC are
+  expanded at first use.
+- Citation details: Abbas et al. appeared in the *International Journal of Intelligent Information
+  Systems*, not the *Journal of Intelligent Information Systems*; the MOISE entry gives pages
+  156-165 and the Hardy entry pages 36-38; the Hassan draft is cited and linked at -02, the
+  revision read, and notes that -03 keeps the narrowing-only chain; the GSD Core entry gives the
+  release date of v1.18.0; the Moise example names its file; the Graicunas entry names the 1937
+  reprint.
+
+No change to any principle, role, control, profile or metric.
+
 ## v0.10 -- 2026-10-26
 
 Changed
