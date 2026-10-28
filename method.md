@@ -31,6 +31,7 @@ It also covers how that unit cooperates with other agent teams and function agen
 | [control-reference.md](control-reference.md) | Security and platform teams implementing the controls | Every control with what it prevents, what keeps it, cost, profile and proof; delegation and signing; the threat-model plan; the control-to-profile map |
 | [claude-code-reference.md](claude-code-reference.md) | Teams implementing the method on Claude Code | The tool mapping with its caveats, templates, and the planned operator's handbook |
 | [related-work.md](related-work.md) | Readers placing this against published work | The published work this method is built out of, and where the setting differs |
+| [standards-map.md](standards-map.md) | Security leaders and auditors who report against a framework | Which method controls relate to each item of MITRE ATLAS, the OWASP agentic Top 10 and NIST SSDF, and the gaps; placement, not a compliance claim |
 
 The method is tool-agnostic. Only claude-code-reference.md names a tool.
 

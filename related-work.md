@@ -602,7 +602,9 @@ and [SLSA](https://slsa.dev/) cover the build and supply-chain side. OWASP's
 [guidance on LLM and agentic applications](https://genai.owasp.org/llm-top-10/) covers threats to
 agent sessions. NIST's [AI Risk Management Framework](https://doi.org/10.6028/NIST.AI.100-1) and
 [ISO/IEC 42001](https://www.iso.org/standard/81230.html) cover AI governance at the level of the
-organisation. The method maps no clauses and offers no crosswalk.
+organisation. The method maps no clauses of these. For MITRE ATLAS, the OWASP Top 10 for Agentic
+Applications and the SSDF, [standards-map.md](standards-map.md) shows which method controls relate
+to each item; like this section, it is placement, not a compliance claim.
 
 ## A practitioner's reading
 

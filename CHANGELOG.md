@@ -4,6 +4,40 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.10.2 -- 2026-10-28
+
+Added
+
+- `standards-map.md`, a non-normative crosswalk from three external standards to the method's
+  controls, for security leaders and auditors who arrive with their own framework: MITRE ATLAS
+  (content release 2026.09), the OWASP Top 10 for Agentic Applications 2026, and NIST SP 800-218
+  (SSDF 1.1), with a note on the SSDF 1.2 draft and a scope note on SP 800-218A. Each row names the
+  related controls, linked to the control reference, a relation (Addresses, Partly, Related or
+  Outside) with its profile, and a note in the method's own words. Addresses is used only where a
+  setting or boundary is designed to stop or contain the item and no accepted residual undoes it
+  at that profile. Every ATLAS technique in the release has a row or an out-of-scope entry. A key
+  names the layers, describes the profiles and defines the terms the notes use. It is placement,
+  not a compliance claim, a certification or an attestation, and not input for a self-attestation
+  that rests on SP 800-218.
+- Its entry rule: a standard from a recognised standards body (ISO/IEC, NIST) or a widely used
+  community framework (MITRE, OWASP). Vendor frameworks are not included; organisation-level AI
+  governance standards (NIST AI RMF, ISO/IEC 42001) are placed in `related-work.md` and not mapped;
+  ISO/IEC 27090:2026 is a candidate not yet mapped.
+- A "Gaps the crosswalk shows" section: the main gaps found across the three standards, merged,
+  split into gaps inside the method's scope and items left to the adopter by design, and the open
+  question whether an agent reviewer counts as a reviewer for SSDF PW.2 and PW.7.
+
+Changed
+
+- `related-work.md`, Standards and frameworks: the sentence saying the method offers no crosswalk
+  now says the method maps no clauses of the governance standards there and points to
+  `standards-map.md`, as placement, not a compliance claim.
+- `README.md` lists the new document, points readers who arrive with a security framework to it,
+  and its limits list points to the crosswalk.
+- `method.md`, §0: the document table lists `standards-map.md`.
+
+No change to any principle, role, control, profile or metric.
+
 ## v0.10.1 -- 2026-10-27
 
 Added
