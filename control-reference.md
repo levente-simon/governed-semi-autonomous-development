@@ -613,7 +613,7 @@ This map lists every control in this reference at the lowest profile that requir
 
 ## Appendix A. Threat model of the reference flow
 
-The reference flow is being threat-modelled in dethernety, the threat-modelling product the author builds (see the README, Origin). This is the plan for that model, at the High profile, with notes on what Lite and Standard remove.
+The reference flow is being threat-modelled. This is the plan for that model, at the High profile, with notes on what Lite and Standard remove.
 
 **Elements.**
 

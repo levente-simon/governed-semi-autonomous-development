@@ -10,7 +10,7 @@ abstract: >-
   A tool-agnostic reference method for governing teams of AI agents that build production
   software: roles and authority, control layers, assurance profiles and metrics. Agents do
   the work; humans keep authority over everything irreversible or outward-facing.
-version: "0.10.2"
+version: "0.10.3"
 date-released: "2026-10-28"
 license: CC-BY-4.0
 url: "https://github.com/levente-simon/governed-semi-autonomous-development"

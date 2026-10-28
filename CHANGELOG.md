@@ -4,6 +4,17 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.10.3 -- 2026-10-28
+
+Changed
+
+- The README's Origin paragraph links the method's originating product to its open-source
+  repository instead of the company site; it still names the product and says it is commercial.
+- `control-reference.md`, Appendix A, no longer names the tool the reference flow is being
+  threat-modelled in; the plan itself is unchanged.
+
+No change to any principle, role, control, profile or metric.
+
 ## v0.10.2 -- 2026-10-28
 
 Added

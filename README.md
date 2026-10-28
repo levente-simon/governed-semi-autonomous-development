@@ -4,7 +4,7 @@ A tool-agnostic reference method for governing teams of AI agents that build pro
 
 The method is designed around three properties at once: **secure**, **correct** and **efficient**. Efficiency never overrides the other two. It is not a security guide: it describes how to organise, run and control agent teams, with security as one property among three.
 
-**Status:** v0.10.2 draft, 2026-10-28. Corrections, questions and adoption reports are
+**Status:** v0.10.3 draft, 2026-10-28. Corrections, questions and adoption reports are
 welcome as [issues](https://github.com/levente-simon/governed-semi-autonomous-development/issues).
 
 ## Documents
@@ -35,7 +35,7 @@ Start with [method.md](method.md), and keep [glossary.md](glossary.md) at hand. 
 
 ## Origin
 
-This method comes out of building [dethernety](https://dether.net), a commercial,
+This method comes out of building [dethernety](https://github.com/dether-net/dethernety-oss), a commercial,
 graph-native threat modeling platform: a solo build since 2025, open-sourced in February 2026,
 and released continuously since. The method is not how that work started.
 It emerged partway through, as the work outgrew a single session and moved to agent teams,
