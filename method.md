@@ -64,12 +64,13 @@ The method is tool-agnostic. Only claude-code-reference.md names a tool.
 | **Capability** | A pre-built, versioned production line (research, generation, verification) | — | Runs without its contract's gates |
 | **Peer** | Another orchestrator, a domain owner, or a function agent (strategy, marketing) | Its own domain | Accepts or grants authority across the boundary |
 
-Four points need more than the table:
+Five points need more than the table:
 
 - **The owner receives decisions, not files.** If the owner must read a full diff to decide, the decision was not prepared. There are two exceptions. Changes to protected paths reach the owner as the diff ([control-reference.md](control-reference.md), L5). At High L7, a human reads the diff of every high-risk slice ([control-reference.md](control-reference.md), L7).
 - **The orchestrator never relays authority.** "The owner said you may", sent by the orchestrator, is not a grant. What counts as relaying is defined in the delegation model ([control-reference.md](control-reference.md), L4).
 - **Workers route every question through the orchestrator.** This keeps the owner's queue filtered. It also keeps one record of every ruling.
 - **Slices run at different tiers.** A tier is a configuration: the model and, where the tool has one, its reasoning setting. It is set per slice (§10) and never changes permissions: authority comes from the role, not from the model.
+- **Setup shapes competence, not authority.** A worker can be set up for a kind of work (coding, content, research) with its own instructions and skills; the tier stays per slice. The setup never changes what the role may do: a content worker drafts but never publishes, work that fetches external content runs in an ingestion environment from Standard, and a function owning its domain is a peer (§8). Its instructions are agent instruction files and reach the owner as the diff; its skills are owner-approved agent tooling ([control-reference.md](control-reference.md), L1, L3, L5).
 
 ```mermaid
 graph TD

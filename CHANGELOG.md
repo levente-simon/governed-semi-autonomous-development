@@ -4,6 +4,15 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.10.4 -- 2026-10-28
+
+Changed
+
+- `method.md`, §2, states that a worker can be set up for a kind of work, and that its setup
+  shapes competence, not authority.
+
+No change to any principle, role, control, profile or metric.
+
 ## v0.10.3 -- 2026-10-28
 
 Changed
