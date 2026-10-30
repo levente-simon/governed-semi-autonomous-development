@@ -218,6 +218,19 @@ Each incident ([method.md](method.md), §11) is recorded in the log with what ha
 
 Optionally, a record also carries the category of a published multi-agent failure taxonomy (system design, inter-agent misalignment, task verification), which makes incidents comparable with published failure data ([related-work.md](related-work.md)).
 
+### Answering an audit or an incident review
+
+An audit or an incident review asks these questions first. The answers are in records the method already keeps.
+
+| Question | Where the answer is |
+|---|---|
+| **Who authorised what?** | The decision register: every owner decision with options, choice and rationale, and for an exception its acceptor and review date. From Standard, the delegation manifest: who granted what to whom, with scope and expiry. The log records every grant and decision ([method.md](method.md), §3); the host's record shows who merged, tagged and published ([control-reference.md](control-reference.md), L4) |
+| **What counts as irreversible or outward-facing?** | Principle 1: humans hold every irreversible or outward-facing action: merge to main, release, publish, production change, external communication ([method.md](method.md), §1). From Standard, the kickoff record lists each environment-authority assignment, whose actions take effect before any review ([control-reference.md](control-reference.md), L1) |
+| **Who owns the gate?** | The owner: only the owner merges and tags. CI workflows with what they invoke, and agent instruction files, reach the owner as the diff; from Standard, every protected path does, gate definitions included ([control-reference.md](control-reference.md), L5). At High L4, a release needs a second party: a human or, for a sole owner, an independent verifier ([method.md](method.md), §12) |
+| **Why does this mechanism exist?** | The control's Prevents column ([control-reference.md](control-reference.md)), and the rule it enforces, which says why and who decided. For a mechanism born from an incident, the incident record and its root-cause class ([method.md](method.md), §11) |
+
+The table assumes one owner or a small owner team ([method.md](method.md), §0). In an organisation with several approvers, these roles map onto its own accountability model.
+
 ### Suspected compromise
 
 When a session may be compromised or misled:

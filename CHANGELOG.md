@@ -4,6 +4,19 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.10.5 -- 2026-10-30
+
+Changed
+
+- `method.md`, §11: the written rule stays as the record of why a mechanism exists and who decided
+  it; a mechanism and its written rule change in the same reviewed change, and the mechanism's test
+  names the written rule it enforces.
+- `practice.md`, §9: a starting point for an audit or an incident review, which points each first
+  question to the record that answers it.
+
+No new control and no profile change; the §11 paragraph adds record-keeping expectations to the
+learning loop.
+
 ## v0.10.4 -- 2026-10-28
 
 Changed

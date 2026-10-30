@@ -318,6 +318,8 @@ All techniques in this section apply at every profile.
 
 A first breach produces a rule in a brief or checklist. A rule that breaks twice becomes a mechanism: a hook, a deny rule, a gate, or a ritual that runs the step every time. It is tested like code, including a test that it rejects what it should. The second refusal of the same delegated action class is a Permission-model incident: the orchestrator drafts the settings change and the owner applies it once.
 
+**The rule stays as the record.** A mechanism replaces the rule as the guard, not as the record: the written rule says why the mechanism exists and who decided it. A mechanism and its rule change in the same reviewed change, and the mechanism's test names the written rule it enforces.
+
 **The loop runs in flight.** At each vehicle or checkpoint, the orchestrator reads the incidents logged since the last one. The same failure (same rule or control) seen twice becomes a slice in the plan. Sustain mode runs the same check at each finalisation.
 
 **Retros** run at close-out. They read the ledger, incidents, metrics and decision register. Because mechanisms are added in flight, the retro handles changes to the method, the templates and the profiles; for example, a control moves to another profile when experience shows the risk was mis-scaled.
