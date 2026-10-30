@@ -414,6 +414,24 @@ Standard (L3); enforcement material is read-only to the session (L3). Memories a
 itself are an open question. [RegenHarness](https://arxiv.org/abs/2609.27612)'s updater cannot
 weaken its own acceptance gate; its paper does not state who authorizes a release.
 
+**What stays in the harness.** In a [talk](https://www.youtube.com/watch?v=7Y4sbZgBdnc), Katz
+argues that models absorb the competence a harness once added. In two studies he cites, the
+harness barely moved benchmark scores but moved cost per task. What stays, he says, is runtime for
+long work, trust and security (permissions scoped to agents and people, guardrails against a
+catastrophic action or a runaway bill) and efficiency. The last two are what this method governs
+([method.md](method.md) §1, principles 2 and 3). His *shims* are deterministic patches for model
+misbehaviour, retired once they stop firing. That suits competence aids such as skills, not
+controls. A control that never fires may be working: it exists for a mistaken or misled session,
+or an adversary. Silence is no reason to remove it; it changes through a reviewed decision, such
+as a retro that finds it mis-scaled (§11).
+
+**Skills have a cost.** [Dong et al.](https://arxiv.org/abs/2608.11888) confirmed 307 cases of a
+skill making an agent worse (one harness, one model; remedies untested): 125 failed tasks and 182
+passing runs that used more tokens and more time, one of them over double. In
+[Xu and Wu](https://arxiv.org/abs/2607.03048)'s study, shorter skills did not lower the bill,
+because a skill is a small and mostly cached part of what the agent reads. How skills affect
+correctness and cost is an open question.
+
 ### Deterministic enforcement: Madatha
 
 Madatha's *A Deterministic Control Plane for LLM Coding Agents*
@@ -813,6 +831,14 @@ al. is further reading on organizational models; Laya is cited from
 - Wang, K., et al. (2026).
   [*RegenHarness: A Robot Agent Harness with Evidence-Gated Recursive Self-Improvement*](https://arxiv.org/abs/2609.27612).
   arXiv:2609.27612 [cs.RO].
+- Katz, J. (2026). [*Is the Agent Harness Dead?*](https://www.youtube.com/watch?v=7Y4sbZgBdnc).
+  Talk, video on YouTube.
+- Dong, G., Gao, Y., Li, L., Xu, T., Hua, Y., & Yang, F. (2026).
+  [*Agent Skills Can Be Harmful: An Empirical Study of Skill-Induced Failures in LLM Agents*](https://arxiv.org/abs/2608.11888).
+  arXiv:2608.11888 [cs.AI].
+- Xu, X., & Wu, W. (2026).
+  [*Shortening agent skills leaves LLM agent cost unchanged*](https://arxiv.org/abs/2607.03048).
+  arXiv:2607.03048 [cs.SE].
 - Madatha, P. (2026).
   [*A Deterministic Control Plane for LLM Coding Agents*](https://arxiv.org/abs/2606.26924).
   arXiv:2606.26924 [cs.SE].

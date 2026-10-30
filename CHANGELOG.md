@@ -4,6 +4,15 @@ Versions are dated and additive unless a change is marked **breaking**, which he
 control was removed, renamed, or moved to a different assurance profile -- anything that
 changes what an adopter has to do.
 
+## v0.10.6 -- 2026-10-30
+
+Changed
+
+- `related-work.md`, Harness engineering, places a practitioner talk on what stays in the harness
+  as models absorb competence, and two studies on the correctness and cost effects of agent skills.
+
+No change to any principle, role, control, profile or metric.
+
 ## v0.10.5 -- 2026-10-30
 
 Changed
